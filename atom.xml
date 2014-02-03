@@ -4,7 +4,7 @@
   <title><![CDATA[a]]></title>
   <link href="http://Treesky.github.com/atom.xml" rel="self"/>
   <link href="http://Treesky.github.com/"/>
-  <updated>2014-02-04T00:08:19+08:00</updated>
+  <updated>2014-02-04T00:10:04+08:00</updated>
   <id>http://Treesky.github.com/</id>
   <author>
     <name><![CDATA[a]]></name>
@@ -71,6 +71,8 @@
 \frac{\partial X}{\partial v} &  \frac{\partial Y}{\partial v} & 0
 \end{vmatrix}
  %]]&gt;</script>
+
+<!--more-->
 
 <p>The probability of getting $k$ heads when flipping $n$ coins is</p>
 
