@@ -9,8 +9,8 @@
   <meta name="author" content="a">
 
   
-  <meta name="description" content="
-">
+  <meta name="description" content="Google means $10^{100}$ A Cross Product Formula % <![CDATA[ \mathbf{V}_1 \times \mathbf{V}_2 = \begin{vmatrix}
+\mathbf{i} & \mathbf{j} & \mathbf{k &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -29,24 +29,21 @@
 <style TYPE="text/css">
 code.has-jax {font: inherit; font-size: 100%; background: inherit; border: inherit;}
 </style>
-<!-- RFE: for easier MathJax install https://github.com/mathjax/MathJax/issues/339 -->
+<!-- mathjax config similar to math.stackexchange -->
 <script type="text/x-mathjax-config">
 MathJax.Hub.Config({
-    tex2jax: {
-        inlineMath: [['$','$'], ['\\(','\\)']],
-        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'] // removed 'code' entry
-    }
-});
-MathJax.Hub.Queue(function() {
-    var all = MathJax.Hub.getAllJax(), i;
-    for(i = 0; i < all.length; i += 1) {
-        all[i].SourceElement().parentNode.className += ' has-jax';
-    }
+  jax: ["input/TeX", "output/HTML-CSS"],
+  tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$']],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  messageStyle: "none",
+  "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
 });
 </script>
-
-<script type='text/javascript' src='http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML'></script>
-<!-- CDN upload request sent in private mail to generated-toc author -->
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
   <script src="/javascripts/modernizr-2.0.js"></script>
   <script src="/javascripts/ender.js"></script>
   <script src="/javascripts/octopress.js" type="text/javascript"></script>
@@ -111,7 +108,24 @@ MathJax.Hub.Queue(function() {
   </header>
 
 
-<div class="entry-content">
+<div class="entry-content"><p>Google means $10^{100}$</p>
+
+<p>A Cross Product Formula</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+
+\mathbf{V}_1 \times \mathbf{V}_2 =  \begin{vmatrix}
+\mathbf{i} & \mathbf{j} & \mathbf{k} \\\
+\frac{\partial X}{\partial u} &  \frac{\partial Y}{\partial u} & 0 \\\
+\frac{\partial X}{\partial v} &  \frac{\partial Y}{\partial v} & 0
+\end{vmatrix}
+ %]]></script>
+
+<p>The probability of getting $k$ heads when flipping $n$ coins is</p>
+
+<script type="math/tex; mode=display">
+P(E) = {n \choose k} p^k (1-p)^{ n-k}
+</script>
 </div>
 
 

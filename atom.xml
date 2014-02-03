@@ -4,7 +4,7 @@
   <title><![CDATA[a]]></title>
   <link href="http://Treesky.github.com/atom.xml" rel="self"/>
   <link href="http://Treesky.github.com/"/>
-  <updated>2014-02-03T19:36:44+08:00</updated>
+  <updated>2014-02-03T19:50:58+08:00</updated>
   <id>http://Treesky.github.com/</id>
   <author>
     <name><![CDATA[a]]></name>
@@ -18,7 +18,24 @@
     <link href="http://Treesky.github.com/blog/2014/02/03/weiwei/"/>
     <updated>2014-02-03T15:16:00+08:00</updated>
     <id>http://Treesky.github.com/blog/2014/02/03/weiwei</id>
-    <content type="html"><![CDATA[
+    <content type="html"><![CDATA[<p>Google means $10^{100}$</p>
+
+<p>A Cross Product Formula</p>
+
+<script type="math/tex; mode=display">% &lt;![CDATA[
+
+\mathbf{V}_1 \times \mathbf{V}_2 =  \begin{vmatrix}
+\mathbf{i} & \mathbf{j} & \mathbf{k} \\\
+\frac{\partial X}{\partial u} &  \frac{\partial Y}{\partial u} & 0 \\\
+\frac{\partial X}{\partial v} &  \frac{\partial Y}{\partial v} & 0
+\end{vmatrix}
+ %]]&gt;</script>
+
+<p>The probability of getting $k$ heads when flipping $n$ coins is</p>
+
+<script type="math/tex; mode=display">
+P(E) = {n \choose k} p^k (1-p)^{ n-k}
+</script>
 ]]></content>
   </entry>
   
