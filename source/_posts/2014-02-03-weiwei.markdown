@@ -1,7 +1,24 @@
 ---
 layout: post
-title: "nipianpianzheyang"
+title: "delp"
 date: 2014-02-03 15:16
 comments: true
-categories: 
+categories:
 ---
+Google means $10^{100}$
+
+A Cross Product Formula
+
+$$
+\mathbf{V}_1 \times \mathbf{V}_2 =  \begin{vmatrix}
+\mathbf{i} & \mathbf{j} & \mathbf{k} \\\
+\frac{\partial X}{\partial u} &  \frac{\partial Y}{\partial u} & 0 \\\
+\frac{\partial X}{\partial v} &  \frac{\partial Y}{\partial v} & 0
+\end{vmatrix}
+$$
+
+The probability of getting $k$ heads when flipping $n$ coins is
+
+$$
+P(E) = {n \choose k} p^k (1-p)^{ n-k}
+$$
