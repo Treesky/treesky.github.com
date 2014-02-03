@@ -1,30 +1,10 @@
 ---
 layout: post
-title: "MarkDown Examples"
-date: 2014-02-03 15:16
+title: "L1LR-Optimization"
+date: 2014-02-03 23:28
 comments: true
-categories:
+categories: optimization L1 LR Survey
 ---
-Google means $10^{100}$
-
-A Cross Product Formula
-
-$$
-\mathbf{V}_1 \times \mathbf{V}_2 =  \begin{vmatrix}
-\mathbf{i} & \mathbf{j} & \mathbf{k} \\\
-\frac{\partial X}{\partial u} &  \frac{\partial Y}{\partial u} & 0 \\\
-\frac{\partial X}{\partial v} &  \frac{\partial Y}{\partial v} & 0
-\end{vmatrix}
-$$
-
-<!--more-->
-
-The probability of getting $k$ heads when flipping $n$ coins is
-
-$$
-P(E) = {n \choose k} p^k (1-p)^{ n-k}
-$$
-
 
 ## 欢迎使用 MarkdownPad 2 ##
 
