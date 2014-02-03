@@ -4,7 +4,7 @@
   <title><![CDATA[a]]></title>
   <link href="http://Treesky.github.com/atom.xml" rel="self"/>
   <link href="http://Treesky.github.com/"/>
-  <updated>2014-02-04T00:04:47+08:00</updated>
+  <updated>2014-02-04T00:06:00+08:00</updated>
   <id>http://Treesky.github.com/</id>
   <author>
     <name><![CDATA[a]]></name>
@@ -35,6 +35,8 @@
   <li>标题 1, 2, 3 (<code>Ctrl+1</code>, <code>Ctrl+2</code>, <code>Ctrl+3</code>)</li>
   <li>列表 (<code>Ctrl+U</code> and <code>Ctrl+Shift+O</code>)</li>
 </ul>
+
+<p>&lt;!—more—&gt;</p>
 
 <h3 id="section">实时预览，所见即所得</h3>
 
