@@ -2,19 +2,27 @@
 <urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>
     <url>
         <loc>http://Treesky.github.com/blog/2014/02/03/weiwei/</loc>
-        <lastmod>2014-02-04T01:12:11+08:00</lastmod>
+        <lastmod>2014-02-09T21:55:22+08:00</lastmod>
     </url>
     <url>
         <loc>http://Treesky.github.com/blog/2014/02/03/l1lr-optimization/</loc>
-        <lastmod>2014-02-04T01:12:41+08:00</lastmod>
+        <lastmod>2014-02-04T19:47:52+08:00</lastmod>
+    </url>
+    <url>
+        <loc>http://Treesky.github.com/blog/2014/02/05/liblinear-usage/</loc>
+        <lastmod>2014-02-07T00:15:33+08:00</lastmod>
+    </url>
+    <url>
+        <loc>http://Treesky.github.com/blog/2014/02/09/l1r-lr-optimization/</loc>
+        <lastmod>2014-02-09T21:58:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://Treesky.github.com/blog/archives/</loc>
-        <lastmod>2014-02-04T01:12:41+08:00</lastmod>
+        <lastmod>2014-02-09T21:58:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://Treesky.github.com/</loc>
-        <lastmod>2014-02-04T01:12:41+08:00</lastmod>
+        <lastmod>2014-02-09T21:58:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://Treesky.github.com/robots.txt</loc>

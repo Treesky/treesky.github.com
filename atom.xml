@@ -4,7 +4,7 @@
   <title><![CDATA[Running]]></title>
   <link href="http://Treesky.github.com/atom.xml" rel="self"/>
   <link href="http://Treesky.github.com/"/>
-  <updated>2014-02-04T01:13:04+08:00</updated>
+  <updated>2014-02-09T21:58:55+08:00</updated>
   <id>http://Treesky.github.com/</id>
   <author>
     <name><![CDATA[Treesky]]></name>
@@ -14,15 +14,201 @@
 
   
   <entry>
+    <title type="html"><![CDATA[l1r-lr optimization]]></title>
+    <link href="http://Treesky.github.com/blog/2014/02/09/l1r-lr-optimization/"/>
+    <updated>2014-02-09T18:33:00+08:00</updated>
+    <id>http://Treesky.github.com/blog/2014/02/09/l1r-lr-optimization</id>
+    <content type="html"><![CDATA[<p>在大规模机器学习中，可能最常见的机器学习算法就是 l1-regularized logisic regreesion. 这种算法适用于大规模稀疏数据，上亿维度的feature，只有几十维的非0特征，几十亿的instance。loss-function如下：</p>
+
+<script type="math/tex; mode=display">
+\min \limits_{\mathbf{w}} f(\mathbf{w}) = ||\mathbf{w}||_1 + C \sum _{i=1}^{l} log(1+e^{-y \mathbf{w}^T x})
+</script>
+
+<p>owlqn是解决l1r-lr的“标准方法”，实现起来简单粗暴有效 =.=</p>
+
+<p>介绍见：http://www.cnblogs.com/downtjs/archive/2013/07/29/3222643.html
+源码见：http://research.microsoft.com/en-us/um/people/jfgao/
+这个代码里面，同时计算 $f’(\mathbf{w})$ 和 $f(\mathbf{w})$ 的那部分思路还是挺有意思的。</p>
+
+<p>在<code>A comparision of Optimization Methods and Software for Large-Scale L1-regularized Linear Classification</code>里面介绍了另外一些优化方法，比如CDN.</p>
+
+<p>一、BBR算法
+BBR(Bayesian Binary Regression)是<code>Large-scale Bayesian logistic regression for text categorization</code>中提出的一种使用trust-region newton methold来解决 coordnate descent 的 subproblem 的方法。</p>
+
+<p>算法的基本思想如下：</p>
+
+<p>step 1: 给定 $\mathbf{w}^1$.</p>
+
+<p>step 2: while true (coordinate descent的外层循环)</p>
+
+<p>step 3: 对 active sets 中的coordinate j (coordinate descent的内层循环)</p>
+
+<p>step 4: 计算 
+$$
+U _j = C \sum \limits _{i=1}^l x _{ij}^2 F(y _i(\mathbf{w}^{k,j})^T \mathbf{x}_i, \Delta _j |x _{ij}| ) 
+$$</p>
+
+<script type="math/tex; mode=display">
+F(r, \delta) = 0.25 (|r| \leq \delta)
+</script>
+
+<script type="math/tex; mode=display">
+F(r, \delta) = \cfrac{1}{2+e^(|r| - \delta) + e^{\delta - |r|}} (otherwise)
+</script>
+
+<script type="math/tex; mode=display">
+\Delta _j \text{ is the trust-region}
+</script>
+
+<p>step 5: 计算
+$$
+d = \min ( \max( P( - \cfrac{g_j^{‘}(0)}{U_j}, w_j^{k,j}), - \Delta _j) , \Delta _j)
+$$</p>
+
+<script type="math/tex; mode=display">
+P(z,w) = z \text{ for } (sgn(w+z) = sgn(w))
+</script>
+
+<script type="math/tex; mode=display">
+P(z,w) = -w \text{ (otherwise)}
+</script>
+
+<p>step 6: 更新
+$$
+\Delta _j = \max (2|d|, \Delta _j / 2)
+$$</p>
+
+<p>step2 和 step3 是标准的 coordinate descent 的算法框架。在step4-step6中，解决了这样一个subproblem，就是</p>
+
+<script type="math/tex; mode=display">
+\min \limits_{z} g_j(z) = | \mathbf{w} _j + z | - | \mathbf{w} _j| + L(\mathbf{w} + z \mathbf{e} _j ) - L(\mathbf{w})
+</script>
+
+<p>这个 subproblem 的解就表示在选定了 coordinate j上我们应该 move 多长的距离。BBR 使用了 trust-region newton method 来解决这个问题。这个</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[liblinear_usage]]></title>
+    <link href="http://Treesky.github.com/blog/2014/02/05/liblinear-usage/"/>
+    <updated>2014-02-05T19:12:00+08:00</updated>
+    <id>http://Treesky.github.com/blog/2014/02/05/liblinear-usage</id>
+    <content type="html"><![CDATA[<p>对大规模稀疏数据要加 -l 0
+-s6 l1-regularized logistic regression
+-g g -n n : to generate the experiment result of CDN with shrinking technique</p>
+]]></content>
+  </entry>
+  
+  <entry>
     <title type="html"><![CDATA[L1LR-Optimization]]></title>
     <link href="http://Treesky.github.com/blog/2014/02/03/l1lr-optimization/"/>
     <updated>2014-02-03T23:28:00+08:00</updated>
     <id>http://Treesky.github.com/blog/2014/02/03/l1lr-optimization</id>
-    <content type="html"><![CDATA[<h2 id="markdownpad-2">欢迎使用 MarkdownPad 2</h2>
+    <content type="html"><![CDATA[<p><code>A comparision of Optimization Methods and Software for Large-Scale L1-regularized Linear Classification</code></p>
 
-<p><strong>MarkdownPad</strong> 是 Windows 平台上一个功能完善的 Markdown 编辑器。</p>
+<p>台大 <strong>林智仁</strong> 的文章，趁春节期间拜读一下。</p>
 
-<h3 id="markdown-">专为 Markdown 打造</h3>
+<p>优化目标是</p>
+
+<script type="math/tex; mode=display">
+\min \limits_{\mathbf{w}} \ f(\mathbf{w}) = ||\mathbf{w}||_1 + C \sum \limits_{i=1}^{l}\xi(\mathbf{w};\mathbf{x}_i,y_i)
+</script>
+
+<p>对
+$$
+\xi(\mathbf{w};\mathbf{x}_i,y_i)
+$$
+的要求是 <strong>非负，且凸，一阶连续可微</strong>(为什么这三个要求？Appendix A表示这样的话，有至少有一个全局最优解)，这里主要讨论的两个loss就是 <strong>log-loss</strong> 和 <strong>l2-loss</strong> .</p>
+
+<h2 id="decomposition">Decomposition类的方法</h2>
+
+<p>每次选择某些维度进行更新</p>
+
+<h3 id="cyclic-coordinate-descent">Cyclic Coordinate Descent</h3>
+
+<p>选择优化维度 <script type="math/tex"> \mathbf{e}_j </script> 之后，通过优化
+$$
+\min \limits_{z} g_j(z) = f(\mathbf{w} + z \mathbf{e}_j) - f(\mathbf{w}) = |w_j^{k,j} + z| - |w_j^{k,j}| + L_j(z;\mathbf{w}^{k,j}) - L_j(0;\mathbf{w}^{k,j})
+$$
+从这个式子中，我们可以得到一个重要的信息，即某个维度 <script type="math/tex">\mathbf{e}_j</script> 在当前迭代轮是否有效。有效的意思就是 <script type="math/tex">z=0</script> 是上式的最优解——当<script type="math/tex">z=0</script>是上式的最优解的时候，我们就知道当然轮在当前维度上，不需要移动。<script type="math/tex">z=0</script>是上式的最优解的当且仅当：</p>
+
+<p>$$
+L_j^a (0) + 1 = 0, \ w_j^{k,j} &gt; 0
+$$
+$$
+L_j^a (0) - 1 = 0, \ w_j^{k,j} &lt; 0
+$$
+$$
+-1 \leq L_j^a (0) + 1 \leq 1, \ w_j^{k,j} = 0
+$$</p>
+
+<p>这个函数在 <script type="math/tex"> z = -w_j </script> 的时候不可微
+得到在维度 <script type="math/tex"> \mathbf{e}_j </script> 上移动的距离</p>
+
+<p><code>Large-scale Bayesian logistic regression for text categorization</code> 中提出了BBR方法。BBR使用trust region和 一维牛顿step来解上面的问题。
+CDN是扩展自<code>Coordinate descent method for large-scale L2-loss linear SVM</code>的方法，原方法使用一维newton direction+线性搜索来解决上面的问题，目标是l2约束的问题。
+<code>A coordinate gradient descent method for nonsmooth convex optimization problems in machine learning</code> 文章中提出了一个通用的decomposition的框架，可以同时选择多个维度计算，CDN是其中的一个特例。</p>
+
+<h3 id="variable-selection-using-gradient-information">Variable selection using Gradient information</h3>
+<p>使用梯度信息选择一组变量， Gauss-Southwell rule. 在使用了梯度信息之后，可以缩减迭代轮数，但是因为要计算梯度信息，因此单轮时间变长。
+<code>A coordinate gradient descent method for l1-regularized convex optimization</code> 里面就是用了 CGD-GS方法， coordinate gradient descent &amp; Gauss-Southwell rule</p>
+
+<h3 id="active-set">Active Set</h3>
+<p>active set method 的特殊之处在于区分了0权重和非0权重特征，使得计算加快。
+Grafting就是active set method for Log Loss</p>
+
+<h2 id="section">解带约束的优化</h2>
+
+<h3 id="section-1">光滑约束</h3>
+
+<p>问题转化为
+$$
+\min \limits_{\mathbf{w}^+,\mathbf{w}^-} \sum _{j=1}^n w_j^+ + \sum _{j=1}^n w_j^- + C \sum _{i=1}^l \xi (\mathbf{w}^+ - \mathbf{w}^-; \mathbf{x}_i, y_i)
+$$</p>
+
+<p>subject to 
+$$
+ w_j^+ \geq 0, w_j^- \geq 0, j = 1,…,n 
+$$</p>
+
+<p>这个转化相当巧妙的把不可微的函数，拆了两个可微的函数的和</p>
+
+<p><code>An interior point method for large-scale l1-regularized logistic regression</code> 把这个问题转化为
+$$
+\min \limits_ {\mathbf{w}, \mathbf{u}} \sum _{j=1}^n u_j + C \sum _{i=1}^l \xi (\mathbf{w}; \mathbf{x} _i, y_i)
+$$</p>
+
+<p>subject to
+$$
+-u_j \leq w_j \leq u_j, j = 1,…,n
+$$
+然后使用interior point方法来解这个问题。</p>
+
+<h3 id="section-2">不光滑的约束</h3>
+
+<script type="math/tex; mode=display">
+\min \limits_ {\mathbf{w}} \sum _{i=1}^l \xi(\mathbf{w};\mathbf{x}_i, y_i)
+</script>
+
+<p>subject to</p>
+
+<script type="math/tex; mode=display">
+||\mathbf{w}||_1 \leq K.
+</script>
+
+<p>Active Set类的方法 <code>The generalized LASSO</code> 也可以被用来解决类似问题，</p>
+
+<h2 id="section-3">其他方法</h2>
+
+<p>EM
+随机梯度下降<code>Stochastic methods for l1 regularized loss minimization</code> <code>Sparse online learning via truncated gradient</code>
+OWLQN
+Hybrid Methods
+Quadratic Approximation Followed by coordinate descent
+Cutting Plane methods
+Approximating L1 regularization by l2 regularization
+Solution Path</p>
 
 <p>提供了语法高亮和方便的快捷键功能，给您最好的 Markdown 编写体验。</p>
 
@@ -38,15 +224,15 @@
 
 <!--more-->
 
-<h3 id="section">实时预览，所见即所得</h3>
+<h3 id="section-4">实时预览，所见即所得</h3>
 
 <p>无需猜测您的 <a href="http://markdownpad.com">语法</a> 是否正确；每当您敲击键盘，实时预览功能都会立刻准确呈现出文档的显示效果。</p>
 
-<h3 id="section-1">自由定制</h3>
+<h3 id="section-5">自由定制</h3>
 
 <p>100% 可自定义的字体、配色、布局和样式，让您可以将 MarkdownPad 配置的得心应手。</p>
 
-<h3 id="markdown--1">为高级用户而设计的稳定的 Markdown 编辑器</h3>
+<h3 id="markdown-">为高级用户而设计的稳定的 Markdown 编辑器</h3>
 
 <p>MarkdownPad 支持多种 Markdown 解析引擎，包括 标准 Markdown 、 Markdown 扩展 (包括表格支持) 以及 GitHub 风格 Markdown 。</p>
 
@@ -59,7 +245,13 @@
     <link href="http://Treesky.github.com/blog/2014/02/03/weiwei/"/>
     <updated>2014-02-03T15:16:00+08:00</updated>
     <id>http://Treesky.github.com/blog/2014/02/03/weiwei</id>
-    <content type="html"><![CDATA[<p>Google means $10^{100}$</p>
+    <content type="html"><![CDATA[<p>这是一个普通段落：</p>
+
+<pre><code>这是一个代码区块。
+	撒旦反抗
+</code></pre>
+
+<p>Google means $10^{100}$</p>
 
 <p>A Cross Product Formula</p>
 
