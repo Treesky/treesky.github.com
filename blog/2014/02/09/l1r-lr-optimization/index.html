@@ -175,7 +175,12 @@ $$</p>
 \min \limits_{z} g_j(z) = | \mathbf{w} _j + z | - | \mathbf{w} _j| + L(\mathbf{w} + z \mathbf{e} _j ) - L(\mathbf{w})
 </script>
 
-<p>这个 subproblem 的解就表示在选定了 coordinate j上我们应该 move 多长的距离。BBR 使用了 trust-region newton method 来解决这个问题。这个</p>
+<p>这个 subproblem 的解就表示在选定了 coordinate j上我们应该 move 多长的距离。BBR 使用了 trust-region newton method 来解决这个问题。在使用trust-region过程中，我们需要一个二次函数来在trust-region内逼近原始函数，在BBR中使用了如下函数</p>
+
+<pre><code>$$
+g_j(z) = g_j(0) + g_j^{'}(0)z + \cfrac{1}{2} g_j^{''}{\eta z} z^2
+$$
+</code></pre>
 
 </div>
 
