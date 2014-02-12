@@ -9,7 +9,7 @@
   <meta name="author" content="Treesky">
 
   
-  <meta name="description" content="在大规模机器学习中，可能最常见的机器学习算法就是 l1-regularized logisic regreesion. 这种算法适用于大规模稀疏数据，上亿维度的feature，只有几十维的非0特征，几十亿的instance。loss-function如下： \min \limits_{\ &hellip;">
+  <meta name="description" content="mostly from Ensemble Methods: Foundations and Algorithms 为了得到一个泛化能力强的模型，我们通常使用 cross-validation + test error 来选择模型，但是交叉验证也不避免的会受到随机分割的数据集的影响。（也就是说， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -93,6 +93,172 @@ MathJax.Hub.Config({
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/02/11/model-selection/">Model_selection</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-02-11T23:32:00+08:00" pubdate data-updated="true">Feb 11<span>th</span>, 2014</time>
+        
+         | <a href="/blog/2014/02/11/model-selection/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>mostly from <code>Ensemble Methods: Foundations and Algorithms</code></p>
+
+<p>为了得到一个泛化能力强的模型，我们通常使用 cross-validation  + test error 来选择模型，但是交叉验证也不避免的会受到随机分割的数据集的影响。（也就是说，不同的数据集分割方法关于哪个模型的泛化能力更强，是会给出不同的答案的。）这时候我们就是使用一些假设检验的方法的帮助我们确定“模型A的效果优于模型B”，这个结论是否可信。</p>
+
+<p>在交叉验证的假设检验中，我们最常使用的就是 10-fold cross-validation t-test.</p>
+
+<p>10-fold cross-validation 就是随机把数据分成10份，然后9份训练，一份做测试，进而得到两个算法在10个测试集上的不同表现。</p>
+
+<p>t-test 是从 z-test 中改进得到的，z-test 适用于样本量较大的时候，在样本量较小的时候，z-test有很大的误差，由于我们是 10-fold  validation 因此在假设检验的时候，我们只有10个样本，因此我们需要采用 t-test. t-test 需要满足一个条件，样本本身（即classifier 在检验集上的错误率/其他评价指标）服从高斯分布（在样本数量较大的情况下，即使不服从高斯分布，也可以使用t-test）。</p>
+
+<p>在 Dependent-Samples t-test中，我们计算
+$$
+t = \cfrac{\sum \limits _{i=1}^n D_i}{\sqrt{\cfrac{n\sum \limits _{i=1}^n D_i^2 - (\sum \limits _{i=1}^n D_i)^2}{n-1}}}
+$$</p>
+
+<p>$D_i$ 表示在相同的 validation set 下的两个算法评测结果的差异。</p>
+
+<p>通过如上计算的 t-值，以及给定的显著性水平 $ \alpha $ ，我们就可以得到拒绝阈 $ | t | $，并进而得到我们是否接受 $ H_0 $ 假设，也就是两个算法是否有差异。</p>
+
+<p>但是 Dietterich[1998] 中指出 10-fold cross-validation t-test 会得到一个较小的 variability 并进一步会在两个算法没有差异的情况下，错误地认为两个算法有差异。因此 Dietterich 推荐使用 5*2 cross-validation paired t-test.</p>
+
+<p>在5*2的 cross-validation 中，每次我们把数据集平均分成2份，两个算法分别在某一份上做训练，然后在另外一份数据上做测试，于是我们就得到四个错误率 $err_a^{(1)}, err_a^{(2)}, err_b^{(1)}, err_b^{2}$， $a，b$ 表示不同算法，$1,2$ 表示训练集。 $d^{(i)} = err_a^{(i)} - err_b^{(i)}$，然后计算均值和方差：</p>
+
+<script type="math/tex; mode=display">
+\mu = \cfrac{d^{(1)} + d^{(2)}}{2}
+</script>
+
+<script type="math/tex; mode=display">
+s^2 = (d^{(1)} - \mu ) ^2 + (d^{(2)} - \mu)^2
+</script>
+
+<p>我们给 $\mu s^2$ 加上下标 $i$ 表示第 $i$ 次cross-validation（一共5次）
+我们如下计算 t-值</p>
+
+<script type="math/tex; mode=display">
+\tilde t = \cfrac{d_1^{(1)}}{\sqrt{\cfrac{1}{5}\sum \limits _{i=1}^5 s_i^2}} ~ t_5
+</script>
+
+<p>如果我们只有一次检验机会的话，比如 1*2 cross-validation（看起来好诡异的样子）的话，我们也可以使用  <strong>McNemar’s test</strong> 方法，也就是</p>
+
+<script type="math/tex; mode=display">
+\cfrac{(|err_{ab}-err_{ba}|-1)^2}{err_{ab} + err_{ba}} ~ \X_1^2
+</script>
+
+<p>$ err<em>{ab} $ 表示 $a$ 预测正确，而 $b$ 预测错误的个数， 相应的 $err</em>{ba}$ 表示 $b$ 预测正确，而 $a$ 预测错误的个数。</p>
+
+<p>如果我们要在多个测试集上验证多个算法的话，我们可以采用 <strong>Friedman test</strong>.这需要我们使用 <em>Nemenyi post-hoc test</em> [Demsar, 2006] 来计算 <em>critical differnce value</em></p>
+
+<script type="math/tex; mode=display">
+CD = q_{\alpha} \sqrt{\cfrac{K(K+1)}{6N}}
+</script>
+
+<p>$N$ 是测试用数据集的数量， $K$ 是算法的数量， $q_{\alpha}$ 是 <em>critical value</em>. 两个算法之间如果在【数据集上的表现的rank值】的平均 的差大于 $CD$ 值的话，就认为有显著差异。</p>
+
+<p>我个人认为后面介绍的 <strong>critical difference diagram</strong> 会更加直观。就是每个算法一个bar，bar的中心中心是该算法在所有数据集上表现的rank值的平均，bar的宽度是 <em>critical difference value</em>.</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/02/11/ensemble/">Ensemble</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-02-11T23:24:00+08:00" pubdate data-updated="true">Feb 11<span>th</span>, 2014</time>
+        
+         | <a href="/blog/2014/02/11/ensemble/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>from <code>Ensemble Methods: Foundations and Algorithms</code></p>
+
+<p>提到 ensemble 类的算法，第一个要提到的就是 boosting, boosting 类算法的最初诞生，来自于 Kearns and Valiant [1989]提出的一个理论上的问题，就是 <em>weakly learnalbe 和 strongly learnable 这两类问题是否等价</em>，由于在现实应用中，一个 weakly 的分类器总是很容易得到的，但是一个 strongly 的分类器却很难得到，因此如果上面那个问题的答案是 “是” 的话，那么任何一个弱分类器都有潜力成为一个强分类器。因此上述理论问题的答案，对真实应用有着相当程度的指导意义。Schapire [1990] 通过构造的方法，回答上上面的问题，构造出来的算法框架就是 boosting. </p>
+
+<p>在 boosting 类算法中，最有名的就属 adaboost 了。 Friedman [2000] 的出发点就是最小化 <strong>exponential loss</strong></p>
+
+<script type="math/tex; mode=display">
+l_{exp}(h \| D) = E_{x ～ D} [e^{-f(x)h(x)}]
+</script>
+
+<p>我们首先解释为什么使用 <strong>exponential loss</strong></p>
+
+<script type="math/tex; mode=display">
+\cfrac{\partial e^{-f(x)H(x)}}{\partial H(x)} = -f(x) e^{-f(x)}H(x)
+</script>
+
+<p>$H(x)$ 是我们要求的模型，$f(x)$ 代表真实的分布函数，$f(x)$ 的取值在分类的情况下，只有两种 ${-1,+1}$，因此</p>
+
+<script type="math/tex; mode=display">
+-f(x) e^{-f(x)H(x)} = -e^{-H(x)}P(f(x)=1 \| x) + e^{H(x)} P(f(x)=-1 \| x)
+</script>
+
+<p>在优化的过程中，我们强制如上的 $ \text{log loss } = 0$ 的时候，可以得到如下的解</p>
+
+<script type="math/tex; mode=display">
+H(x) = \cfrac{1}{2} ln \cfrac{P(f(x) = 1 \| x)}{P(f(x) = -1) \| x}
+</script>
+
+<p>因此</p>
+
+<script type="math/tex; mode=display">
+sign(H(x)) = sign(\cfrac{1}{2} ln \cfrac{P(f(x) = 1 \| x)}{P(f(x) = -1) \| x})
+</script>
+
+<p>也就是当 $P(f(x)=1 | x) &gt; P(f(x)=-1 | x)$ 的时候 $sign(H(x)) = 1$，而 $P(f(x)=1 | x) &lt; P(f(x)=-1 | x)$ 的时候 $sign(H(x)) = -1$，而这个结果就是贝叶斯分类器的结果，也就是理论上的最优结果。</p>
+
+<p>因此我们就得出结论，<strong>优化 log loss 和 优化bayesian 分类错误率是一致的</strong>，而这也是 Friedman [2000] 的出发点。</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -514,6 +680,14 @@ Solution Path</p>
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2014/02/11/model-selection/">model_selection</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/02/11/ensemble/">ensemble</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2014/02/09/l1r-lr-optimization/">l1r-lr optimization</a>
       </li>
     
@@ -523,10 +697,6 @@ Solution Path</p>
     
       <li class="post">
         <a href="/blog/2014/02/03/l1lr-optimization/">L1LR-Optimization</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2014/02/03/weiwei/">MarkDown Examples</a>
       </li>
     
   </ul>

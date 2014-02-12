@@ -5,11 +5,11 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Category: LR - Running</title>
+  <title>ensemble - Running</title>
   <meta name="author" content="Treesky">
 
   
-  <meta name="description" content="Category: LR">
+  <meta name="description" content="from Ensemble Methods: Foundations and Algorithms 提到 ensemble 类的算法，第一个要提到的就是 boosting, boosting 类算法的最初诞生，来自于 Kearns and Valiant [1989]提出的一个理论上的问题，就是 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -18,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://Treesky.github.com/blog/categories/lr/">
+  <link rel="canonical" href="http://Treesky.github.com/blog/2014/02/11/ensemble/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="Running" type="application/atom+xml">
@@ -92,36 +92,125 @@ MathJax.Hub.Config({
   <div id="main">
     <div id="content">
       <div>
-<article role="article">
+<article class="hentry" role="article">
   
   <header>
-    <h1 class="entry-title">Category: LR</h1>
+    
+      <h1 class="entry-title">Ensemble</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-02-11T23:24:00+08:00" pubdate data-updated="true">Feb 11<span>th</span>, 2014</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
     
   </header>
-  
-  <div id="blog-archives" class="category">
 
 
+<div class="entry-content"><p>from <code>Ensemble Methods: Foundations and Algorithms</code></p>
 
-  
-  <h2>2014</h2>
+<p>提到 ensemble 类的算法，第一个要提到的就是 boosting, boosting 类算法的最初诞生，来自于 Kearns and Valiant [1989]提出的一个理论上的问题，就是 <em>weakly learnalbe 和 strongly learnable 这两类问题是否等价</em>，由于在现实应用中，一个 weakly 的分类器总是很容易得到的，但是一个 strongly 的分类器却很难得到，因此如果上面那个问题的答案是 “是” 的话，那么任何一个弱分类器都有潜力成为一个强分类器。因此上述理论问题的答案，对真实应用有着相当程度的指导意义。Schapire [1990] 通过构造的方法，回答上上面的问题，构造出来的算法框架就是 boosting. </p>
 
-<article>
-  
-<h1><a href="/blog/2014/02/03/l1lr-optimization/">L1LR-Optimization</a></h1>
-<time datetime="2014-02-03T23:28:00+08:00" pubdate><span class='month'>Feb</span> <span class='day'>03</span> <span class='year'>2014</span></time>
+<p>在 boosting 类算法中，最有名的就属 adaboost 了。 Friedman [2000] 的出发点就是最小化 <strong>exponential loss</strong></p>
 
-<footer>
-  <span class="categories">posted in <a class='category' href='/blog/categories/l1/'>L1</a>, <a class='category' href='/blog/categories/lr/'>LR</a>, <a class='category' href='/blog/categories/survey/'>Survey</a>, <a class='category' href='/blog/categories/optimization/'>optimization</a></span>
-</footer>
+<script type="math/tex; mode=display">
+l_{exp}(h \| D) = E_{x ～ D} [e^{-f(x)h(x)}]
+</script>
 
+<p>我们首先解释为什么使用 <strong>exponential loss</strong></p>
 
-</article>
+<script type="math/tex; mode=display">
+\cfrac{\partial e^{-f(x)H(x)}}{\partial H(x)} = -f(x) e^{-f(x)}H(x)
+</script>
 
+<p>$H(x)$ 是我们要求的模型，$f(x)$ 代表真实的分布函数，$f(x)$ 的取值在分类的情况下，只有两种 ${-1,+1}$，因此</p>
+
+<script type="math/tex; mode=display">
+-f(x) e^{-f(x)H(x)} = -e^{-H(x)}P(f(x)=1 \| x) + e^{H(x)} P(f(x)=-1 \| x)
+</script>
+
+<p>在优化的过程中，我们强制如上的 $ \text{log loss } = 0$ 的时候，可以得到如下的解</p>
+
+<script type="math/tex; mode=display">
+H(x) = \cfrac{1}{2} ln \cfrac{P(f(x) = 1 \| x)}{P(f(x) = -1) \| x}
+</script>
+
+<p>因此</p>
+
+<script type="math/tex; mode=display">
+sign(H(x)) = sign(\cfrac{1}{2} ln \cfrac{P(f(x) = 1 \| x)}{P(f(x) = -1) \| x})
+</script>
+
+<p>也就是当 $P(f(x)=1 | x) &gt; P(f(x)=-1 | x)$ 的时候 $sign(H(x)) = 1$，而 $P(f(x)=1 | x) &lt; P(f(x)=-1 | x)$ 的时候 $sign(H(x)) = -1$，而这个结果就是贝叶斯分类器的结果，也就是理论上的最优结果。</p>
+
+<p>因此我们就得出结论，<strong>优化 log loss 和 优化bayesian 分类错误率是一致的</strong>，而这也是 Friedman [2000] 的出发点。</p>
 </div>
 
+
+  <footer>
+    <p class="meta">
+      
   
+
+<span class="byline author vcard">Posted by <span class="fn">Treesky</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-02-11T23:24:00+08:00" pubdate data-updated="true">Feb 11<span>th</span>, 2014</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://Treesky.github.com/blog/2014/02/11/ensemble/" data-via="" data-counturl="http://Treesky.github.com/blog/2014/02/11/ensemble/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/02/09/l1r-lr-optimization/" title="Previous Post: l1r-lr optimization">&laquo; l1r-lr optimization</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2014/02/11/model-selection/" title="Next Post: model_selection">model_selection &raquo;</a>
+      
+    </p>
+  </footer>
 </article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
 
 </div>
 
@@ -177,7 +266,10 @@ MathJax.Hub.Config({
       var disqus_shortname = 'treesky';
       
         
-        var disqus_script = 'count.js';
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://Treesky.github.com/blog/2014/02/11/ensemble/';
+        var disqus_url = 'http://Treesky.github.com/blog/2014/02/11/ensemble/';
+        var disqus_script = 'embed.js';
       
     (function () {
       var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
