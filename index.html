@@ -254,7 +254,7 @@ sign(H(x)) = sign(\cfrac{1}{2} ln \cfrac{P(f(x) = 1 \| x)}{P(f(x) = -1) \| x})
 
 <p>因此我们就得出结论，<strong>优化 log loss 和 优化bayesian 分类错误率是一致的</strong>，而这也是 Adaboost 的所有的出发点。</p>
 
-<p>Adaboost 在整个算法过程中主要分为两步，第一步 <strong>求得$h_t(x)$的权重$\alpha <em>t$**，第二步在**$H</em>{t-1}$的基础上求得一个新的$h_t$，使得新的$h_t$可以弥补$H_{t-1}$的一些不足</strong></p>
+<p>Adaboost 在整个算法过程中主要分为两步，第一步 <strong>求得$h_t(x)$的权重$a_t$</strong> ，第二步在 <strong>$H_t$的基础上求得一个新的$h_t$，使得新的$h_t$可以弥补$H_t$的一些不足</strong></p>
 
 <p>在第一步的情况下，我们已经得到了$h_t$，要求得$\alpha _t$使得$\alpha _t * h_t$ 可以最小化 log loss.</p>
 
@@ -329,6 +329,7 @@ D_{t+1}(x) &= \cfrac{D(x) e^{-f(x)H_t(x)}}{E_{x \sim D}[e ^{-f(x)H_t(x)}]} \\
 
 <p>而上述公式也正是 Adaboost 调整 instance 分布的公式。</p>
 
+<p>从整体上，我们可以看到我们首先证明了 exp loss 和 bayesian 最优错误率的一致性；然后从 exp loss 出发得到了 $ \alpha _t$ 和 $ D _t(h _t) $ 的更新公式。因此我们可以看到 Adaboost 有很强的在训练数据上得到 Bayesian 最优错误率的能力，但是这个达到这个最优错误率是否就意味着不会过拟合，这个我认为还有另外一个必要条件，就是 <strong>训练数据和测试数据的分布一致</strong>， Adaboost 对这个 <strong>一致性</strong> 非常敏感，只要分布稍有差别，就非常容易过拟合，因此当训练数据和测试数据的分布不一致的情况下， 我们就需要一些额外的措施来帮助我们避免过拟合。</p>
 </div>
   
   
