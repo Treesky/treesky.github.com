@@ -191,7 +191,7 @@ CD = q_{\alpha} \sqrt{\cfrac{K(K+1)}{6N}}
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2014/02/11/ensemble/">Ensemble</a></h1>
+      <h1 class="entry-title"><a href="/blog/2014/02/11/ensemble/">Adaboost 漫谈</a></h1>
     
     
       <p class="meta">
@@ -328,6 +328,8 @@ D_{t+1}(x) &= \cfrac{D(x) e^{-f(x)H_t(x)}}{E_{x \sim D}[e ^{-f(x)H_t(x)}]} \\
  %]]></script>
 
 <p>而上述公式也正是 Adaboost 调整 instance 分布的公式。</p>
+
+<p>从整体上，我们可以看到我们首先证明了 exp loss 和 bayesian 最优错误率的一致性；然后从 exp loss 出发得到了 $ \alpha _t$ 和 $ D _t(h _t) $ 的更新公式。因此我们可以看到 Adaboost 有很强的在训练数据上得到 Bayesian 最优错误率的能力，但是这个达到这个最优错误率是否就意味着不会过拟合，这个我认为还有另外一个必要条件，就是 <strong>训练数据和测试数据的分布一致</strong>， Adaboost 对这个 <strong>一致性</strong> 非常敏感，只要分布稍有差别，就非常容易过拟合，因此当训练数据和测试数据的分布不一致的情况下，我们就需要一些额外的措施来帮助我们避免过拟合。</p>
 </div>
   
   
@@ -759,7 +761,7 @@ Solution Path</p>
       </li>
     
       <li class="post">
-        <a href="/blog/2014/02/11/ensemble/">ensemble</a>
+        <a href="/blog/2014/02/11/ensemble/">Adaboost 漫谈</a>
       </li>
     
       <li class="post">
