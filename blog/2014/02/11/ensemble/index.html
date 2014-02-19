@@ -146,20 +146,20 @@ l_{exp}(h \| D) = E_{x ～ D} [e^{-f(x)h(x)}]
 <p>在优化的过程中，我们强制如上的 $ \text{log loss } = 0$ 的时候，可以得到如下的解</p>
 
 <script type="math/tex; mode=display">
-H(x) = \cfrac{1}{2} ln \cfrac{P(f(x) = 1 \| x)}{P(f(x) = -1) \| x}
+H(x) = \cfrac{1}{2} ln \cfrac{P(f(x) = 1 \| x)}{P(f(x) = -1 \| x)}
 </script>
 
 <p>因此</p>
 
 <script type="math/tex; mode=display">
-sign(H(x)) = sign(\cfrac{1}{2} ln \cfrac{P(f(x) = 1 \| x)}{P(f(x) = -1) \| x})
+sign(H(x)) = sign(\cfrac{1}{2} ln \cfrac{P(f(x) = 1 \| x)}{P(f(x) = -1 \| x)})
 </script>
 
 <p>也就是当 $P(f(x)=1 | x) &gt; P(f(x)=-1 | x)$ 的时候 $sign(H(x)) = 1$，而 $P(f(x)=1 | x) &lt; P(f(x)=-1 | x)$ 的时候 $sign(H(x)) = -1$，而这个结果就是贝叶斯分类器的结果，也就是理论上的最优结果。</p>
 
 <p>因此我们就得出结论，<strong>优化 log loss 和 优化bayesian 分类错误率是一致的</strong>，而这也是 Adaboost 的所有的出发点。</p>
 
-<p>Adaboost 在整个算法过程中主要分为两步，第一步 <strong>求得$h_t(x)$的权重$\alpha_t$</strong> ，第二步在 <strong>$H_t$ 的基础上求得一个新的 <script type="math/tex">h_{t+1}</script></strong> ，使得新的 $h_{t+1}$ 可以弥补 $H_t$ 的一些不足</p>
+<p>Adaboost 在整个算法过程中主要分为两步，第一步 <strong>求得$h_t(x)$的权重$\alpha_t$</strong> ，第二步在 <strong>$H_t$ 的基础上求得一个新的 <script type="math/tex">h_{t+1}</script></strong> ，使得新的 $h_{t+1}$ 可以弥补 $$H_t$ 的一些不足</p>
 
 <p>在第一步的情况下，我们已经得到了$h_t$，要求得$\alpha _t$使得$\alpha _t * h_t$ 可以最小化 log loss.</p>
 
@@ -298,6 +298,10 @@ D_{t+1}(x) &= \cfrac{D(x) e^{-f(x)H_t(x)}}{E_{x \sim D}[e ^{-f(x)H_t(x)}]} \\
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2014/02/19/owlqn/">owlqn</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2014/02/11/model-selection/">model_selection</a>
       </li>
     
@@ -311,10 +315,6 @@ D_{t+1}(x) &= \cfrac{D(x) e^{-f(x)H_t(x)}}{E_{x \sim D}[e ^{-f(x)H_t(x)}]} \\
     
       <li class="post">
         <a href="/blog/2014/02/05/liblinear-usage/">liblinear_usage</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2014/02/03/l1lr-optimization/">L1LR-Optimization</a>
       </li>
     
   </ul>

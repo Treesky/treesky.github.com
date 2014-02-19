@@ -5,11 +5,11 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>model_selection - Running</title>
+  <title>owlqn - Running</title>
   <meta name="author" content="Treesky">
 
   
-  <meta name="description" content="mostly from Ensemble Methods: Foundations and Algorithms 为了得到一个泛化能力强的模型，我们通常使用 cross-validation + test error 来选择模型，但是交叉验证也不避免的会受到随机分割的数据集的影响。（也就是说， &hellip;">
+  <meta name="description" content="在我们优化一个 loss function 的时候最自然的想法就是 gradient descent，毕竟 gradient 指向的是在当前点上的最速下降方向。 但是 gradient descent 的 local convergence 的速度非常慢，这部分是因为 gradient &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -18,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://Treesky.github.com/blog/2014/02/11/model-selection/">
+  <link rel="canonical" href="http://Treesky.github.com/blog/2014/02/19/owlqn/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="Running" type="application/atom+xml">
@@ -96,7 +96,7 @@ MathJax.Hub.Config({
   
   <header>
     
-      <h1 class="entry-title">Model_selection</h1>
+      <h1 class="entry-title">Owlqn</h1>
     
     
       <p class="meta">
@@ -112,7 +112,7 @@ MathJax.Hub.Config({
   
 
 
-<time datetime="2014-02-11T23:32:00+08:00" pubdate data-updated="true">Feb 11<span>th</span>, 2014</time>
+<time datetime="2014-02-19T01:09:00+08:00" pubdate data-updated="true">Feb 19<span>th</span>, 2014</time>
         
          | <a href="#disqus_thread">Comments</a>
         
@@ -121,61 +121,93 @@ MathJax.Hub.Config({
   </header>
 
 
-<div class="entry-content"><p>mostly from <code>Ensemble Methods: Foundations and Algorithms</code></p>
+<div class="entry-content"><p>在我们优化一个 loss function 的时候最自然的想法就是 gradient descent，毕竟 gradient 指向的是在当前点上的最速下降方向。</p>
 
-<p>为了得到一个泛化能力强的模型，我们通常使用 cross-validation  + test error 来选择模型，但是交叉验证也不避免的会受到随机分割的数据集的影响。（也就是说，不同的数据集分割方法关于哪个模型的泛化能力更强，是会给出不同的答案的。）这时候我们就是使用一些假设检验的方法的帮助我们确定“模型A的效果优于模型B”，这个结论是否可信。</p>
+<p>但是 gradient descent 的 local convergence 的速度非常慢，这部分是因为 gradient descent 是一种 “贪婪” 的做法，每次的时候我们都只考虑当前点的最速下降方向。</p>
 
-<p>在交叉验证的假设检验中，我们最常使用的就是 10-fold cross-validation t-test.</p>
+<p>除了 梯度 方向之外，还有很多方向可以用来作为搜索方向。这里面最有名的可能就是 Newton direction。</p>
 
-<p>10-fold cross-validation 就是随机把数据分成10份，然后9份训练，一份做测试，进而得到两个算法在10个测试集上的不同表现。</p>
-
-<p>t-test 是从 z-test 中改进得到的，z-test 适用于样本量较大的时候，在样本量较小的时候，z-test有很大的误差，由于我们是 10-fold  validation 因此在假设检验的时候，我们只有10个样本，因此我们需要采用 t-test. t-test 需要满足一个条件，样本本身（即classifier 在检验集上的错误率/其他评价指标）服从高斯分布（在样本数量较大的情况下，即使不服从高斯分布，也可以使用t-test）。</p>
-
-<p>在 Dependent-Samples t-test中，我们计算
-$$
-t = \cfrac{\sum \limits _{i=1}^n D_i}{\sqrt{\cfrac{n\sum \limits _{i=1}^n D_i^2 - (\sum \limits _{i=1}^n D_i)^2}{n-1}}}
-$$</p>
-
-<p>$D_i$ 表示在相同的 validation set 下的两个算法评测结果的差异。</p>
-
-<p>通过如上计算的 t-值，以及给定的显著性水平 $ \alpha $ ，我们就可以得到拒绝阈 $ | t | $，并进而得到我们是否接受 $ H_0 $ 假设，也就是两个算法是否有差异。</p>
-
-<p>但是 Dietterich[1998] 中指出 10-fold cross-validation t-test 会得到一个较小的 variability 并进一步会在两个算法没有差异的情况下，错误地认为两个算法有差异。因此 Dietterich 推荐使用 5*2 cross-validation paired t-test.</p>
-
-<p>在5*2的 cross-validation 中，每次我们把数据集平均分成2份，两个算法分别在某一份上做训练，然后在另外一份数据上做测试，于是我们就得到四个错误率 $err_a^{(1)}, err_a^{(2)}, err_b^{(1)}, err_b^{2}$， $a，b$ 表示不同算法，$1,2$ 表示训练集。 $d^{(i)} = err_a^{(i)} - err_b^{(i)}$，然后计算均值和方差：</p>
+<p>Newton direction 考虑了如下问题</p>
 
 <script type="math/tex; mode=display">
-\mu = \cfrac{d^{(1)} + d^{(2)}}{2}
+f(x_k + p) \approx f_k + p^T \nabla f_k + \cfrac{1}{2} p^T \nabla ^2 f_k p = m_k(p)
+</script>
+
+<p>当前的点是 $x_k$ 我们需要考虑的问题就是如果让 $x_k$ 在方向 $p$ 上移动单位长度，使得我们的函数值变的更小。
+我们对 $f(x_k + p) $ 做二阶泰勒展式展开，就可以得到等号右边的形式。然后对这个泰勒展示导数 = 0，可以得到</p>
+
+<script type="math/tex; mode=display">
+p = -\nabla ^2 f_k^{-1} \nabla f_k
+</script>
+
+<p>牛顿法在 local convergence 阶段有很好的收敛速度，但是 $ \nabla ^2 f_k $ 也就是我们所说的 hessian 矩阵，求解起来特别麻烦，于是我们就想通过一些近似的方法来求解 $ \nabla ^2 f_k $</p>
+
+<p>一个简单的思路就是，二阶导数是一阶导数的导数，也就是说</p>
+
+<script type="math/tex; mode=display">
+\nabla ^2 f_k^{-1} = B_{k+1} (x_{k+1} - x_k) = \nabla f_{k+1} - \nabla f_k 
+</script>
+
+<p>令$ s_k = x<em>{k+1} - x_k $ and $ y_k = \nabla f</em>{k+1} - \nabla f_k $ 我们就得到 $B_{k+1} s_k = y_k$ 这就是著名的切线公式。</p>
+
+<p>注意我们在得到 newton direction 的过程中，需要的一个条件就是hessian 矩阵正定；同是考虑到，求偏导次序不影响结果，因此hessian 矩阵还有正对称的性质。</p>
+
+<p>满足 $B_{k+1} s_k = y_k$ 的矩阵有无数，这个方程有 $n^2$ 的自由度，考虑到对称的性质，这个方程还有 $n(n-1)/2$ 的自由度；正定的性质可以额外引入 $n$ 个约束，即所有的 principal minors 应该是正的。但是这依然不足以唯一确定满足切线方程的矩阵。因此我们<strong>强行</strong> 引入了一个需求，就是 $B$ 和 $B_k$ 尽量“相似”</p>
+
+<script type="math/tex; mode=display">
+\min \limits _B \| B - B_k \| \\
+\text{subject to   } B = B^T, B s_k = y_k
+</script>
+
+<p>根据 “相似性” 也就是 norm 的定义不同，我们可以得到不同的 伪牛顿法，这里的相似性定义是<code>Frobenius norm</code>:</p>
+
+<script type="math/tex; mode=display">
+\| A \| _w = \| W^{1/2}AW{1/2} ||_F
 </script>
 
 <script type="math/tex; mode=display">
-s^2 = (d^{(1)} - \mu ) ^2 + (d^{(2)} - \mu)^2
+ \| C \| ^2_F = \sum _{i=1}^n \sum _{j=1}^n c_{ij}^2
 </script>
 
-<p>我们给 $\mu s^2$ 加上下标 $i$ 表示第 $i$ 次cross-validation（一共5次）
-我们如下计算 t-值</p>
+<p>$W$ 的选择只要满足 $W y_k = S_k$ 即可。</p>
+
+<p>这里我们取 $W = G_k^{-1}$</p>
 
 <script type="math/tex; mode=display">
-\tilde t = \cfrac{d_1^{(1)}}{\sqrt{\cfrac{1}{5}\sum \limits _{i=1}^5 s_i^2}} ~ t_5
+G_k = [ \int_0^1 \nabla ^2 f(x_k + m \alpha _k p_k) dm]
 </script>
 
-<p>如果我们只有一次检验机会的话，比如 1*2 cross-validation（看起来好诡异的样子）的话，我们也可以使用  <strong>McNemar’s test</strong> 方法，也就是</p>
+<p>确定了 norm 的定义之后，我们求解 $B_k$ 就可以得到 DFP 伪牛顿法如下：</p>
 
 <script type="math/tex; mode=display">
-\cfrac{(|err_{ab}-err_{ba}|-1)^2}{err_{ab} + err_{ba}} \sim X_1^2
+B_{k+1} = (I - r_k y_k s_k ^T) B_k (I - r_k s_k y_k ^T) + r_k y_k y_k^T, \\
+r_k = \cfrac{1}{y_k^T s_k}.
 </script>
 
-<p>$ err<em>{ab} $ 表示 $a$ 预测正确，而 $b$ 预测错误的个数， 相应的 $err</em>{ba}$ 表示 $b$ 预测正确，而 $a$ 预测错误的个数。</p>
-
-<p>如果我们要在多个测试集上验证多个算法的话，我们可以采用 <strong>Friedman test</strong>.这需要我们使用 <em>Nemenyi post-hoc test</em> [Demsar, 2006] 来计算 <em>critical differnce value</em></p>
+<p>考虑到我们最终用的时候，用的是 $B_k^{-1}$ 而不是 $B_k$ 本身，因此我们可以考虑直接近似 $B_k^{-1}$ 而不是近似 $B_k$ 然后再求逆矩阵。即我们直接求解 $H_{k+1} y_k = s_k$</p>
 
 <script type="math/tex; mode=display">
-CD = q_{\alpha} \sqrt{\cfrac{K(K+1)}{6N}}
+\min \limits_H \| H - H_k \| \\
+\text{subject to } H = H^T, H y_k = s_k.
 </script>
 
-<p>$N$ 是测试用数据集的数量， $K$ 是算法的数量， $q_{\alpha}$ 是 <em>critical value</em>. 两个算法之间如果在【数据集上的表现的rank值】的平均 的差大于 $CD$ 值的话，就认为有显著差异。</p>
+<p>一样的 norm 求解得到</p>
 
-<p>我个人认为后面介绍的 <strong>critical difference diagram</strong> 会更加直观。就是每个算法一个bar，bar的中心中心是该算法在所有数据集上表现的rank值的平均，bar的宽度是 <em>critical difference value</em>.</p>
+<script type="math/tex; mode=display">
+H_{k+1} = (I - \rho _k s_k y_k^T)H_k(I- \rho _k y_k s_k^T) + \rho _k s_k s_k^T, \\
+\rho _k = \cfrac{1}{y_k^T s_k}
+</script>
+
+<p>这就是著名的BFGS算法。可能BFGS算法是所有的伪牛顿法中，普遍来说效果比较好的。</p>
+
+<p>BFGS算法虽然很好，但是要存储 $H_{k+1}$ 这个矩阵的大小是 $n(n+1)/2$ ，这个空间在 $n$ 很大的时候，是难以接受的。</p>
+
+<p>通过分析 BFGS 的更新公式，我们可以看到每次更新都只依赖于 $H_k, s_k, y_k$，如果我们把之前的 $H_0, 以及每一步的s_k, y_k$ 都保存下来的话，每次使用的时候，我们就可以现算出一个 $r = H_k \nabla f_k$ 的向量出来。</p>
+
+<p>通过精心的算法设计，就得到了LBFGS two-loop recursion 算法
+<code>http://www.cnblogs.com/downtjs/archive/2013/07/29/3222643.html</code></p>
+
+<p>再接下来就是通过使用 sub gradient 代替 gradient，解决了 l1-norm 不可导的问题之后，就得到了 OWL-QN 算法。 </p>
 </div>
 
 
@@ -198,7 +230,7 @@ CD = q_{\alpha} \sqrt{\cfrac{K(K+1)}{6N}}
   
 
 
-<time datetime="2014-02-11T23:32:00+08:00" pubdate data-updated="true">Feb 11<span>th</span>, 2014</time>
+<time datetime="2014-02-19T01:09:00+08:00" pubdate data-updated="true">Feb 19<span>th</span>, 2014</time>
       
 
 
@@ -206,7 +238,7 @@ CD = q_{\alpha} \sqrt{\cfrac{K(K+1)}{6N}}
     
       <div class="sharing">
   
-  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://Treesky.github.com/blog/2014/02/11/model-selection/" data-via="" data-counturl="http://Treesky.github.com/blog/2014/02/11/model-selection/" >Tweet</a>
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://Treesky.github.com/blog/2014/02/19/owlqn/" data-via="" data-counturl="http://Treesky.github.com/blog/2014/02/19/owlqn/" >Tweet</a>
   
   
   
@@ -215,10 +247,8 @@ CD = q_{\alpha} \sqrt{\cfrac{K(K+1)}{6N}}
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2014/02/11/ensemble/" title="Previous Post: Adaboost 漫谈">&laquo; Adaboost 漫谈</a>
+        <a class="basic-alignment left" href="/blog/2014/02/11/model-selection/" title="Previous Post: model_selection">&laquo; model_selection</a>
       
-      
-        <a class="basic-alignment right" href="/blog/2014/02/19/owlqn/" title="Next Post: owlqn">owlqn &raquo;</a>
       
     </p>
   </footer>
@@ -285,8 +315,8 @@ CD = q_{\alpha} \sqrt{\cfrac{K(K+1)}{6N}}
       
         
         // var disqus_developer = 1;
-        var disqus_identifier = 'http://Treesky.github.com/blog/2014/02/11/model-selection/';
-        var disqus_url = 'http://Treesky.github.com/blog/2014/02/11/model-selection/';
+        var disqus_identifier = 'http://Treesky.github.com/blog/2014/02/19/owlqn/';
+        var disqus_url = 'http://Treesky.github.com/blog/2014/02/19/owlqn/';
         var disqus_script = 'embed.js';
       
     (function () {
