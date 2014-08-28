@@ -148,7 +148,14 @@ p = -\nabla ^2 f_k^{-1} \nabla f_k
 \nabla ^2 f_k^{-1} = B_{k+1} (x_{k+1} - x_k) = \nabla f_{k+1} - \nabla f_k 
 </script>
 
-<p>令$ s_k = x<em>{k+1} - x_k $ and $ y_k = \nabla f</em>{k+1} - \nabla f_k $ 我们就得到 $B_{k+1} s_k = y_k$ 这就是著名的切线公式。</p>
+<p>令 </p>
+
+<script type="math/tex; mode=display">
+s_k = x_ {k+1} - x_k \\
+y_k = \nabla f_{k+1} - \nabla f_k 
+</script>
+
+<p>我们就得到 $B_{k+1} s_k = y_k$ 这就是著名的切线公式。</p>
 
 <p>注意我们在得到 newton direction 的过程中，需要的一个条件就是hessian 矩阵正定；同是考虑到，求偏导次序不影响结果，因此hessian 矩阵还有正对称的性质。</p>
 
@@ -250,6 +257,8 @@ H_{k+1} = (I - \rho _k s_k y_k^T)H_k(I- \rho _k y_k s_k^T) + \rho _k s_k s_k^T, 
         <a class="basic-alignment left" href="/blog/2014/02/11/model-selection/" title="Previous Post: model_selection">&laquo; model_selection</a>
       
       
+        <a class="basic-alignment right" href="/blog/2014/02/19/dist-auc/" title="Next Post: margin_auc">margin_auc &raquo;</a>
+      
     </p>
   </footer>
 </article>
@@ -269,23 +278,23 @@ H_{k+1} = (I - \rho _k s_k y_k^T)H_k(I- \rho _k y_k s_k^T) + \rho _k s_k s_k^T, 
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2014/02/19/owlqn/">owlqn</a>
+        <a href="/blog/2014/08/29/test/">test</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2014/02/11/model-selection/">model_selection</a>
+        <a href="/blog/2014/08/29/predict-bid/">predict_bid</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2014/02/11/ensemble/">Adaboost 漫谈</a>
+        <a href="/blog/2014/04/10/factorization-machine/">Factorization machine</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2014/02/09/l1r-lr-optimization/">l1r-lr optimization</a>
+        <a href="/blog/2014/04/10/context-advertisment/">Context Advertisment</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2014/02/05/liblinear-usage/">liblinear_usage</a>
+        <a href="/blog/2014/04/10/logistic-regression/">logistic regression</a>
       </li>
     
   </ul>

@@ -9,7 +9,8 @@
   <meta name="author" content="Treesky">
 
   
-  <meta name="description" content="在我们优化一个 loss function 的时候最自然的想法就是 gradient descent，毕竟 gradient 指向的是在当前点上的最速下降方向。 但是 gradient descent 的 local convergence 的速度非常慢，这部分是因为 gradient &hellip;">
+  <meta name="description" content="
+">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -99,6 +100,309 @@ MathJax.Hub.Config({
       
   <header>
     
+      <h1 class="entry-title"><a href="/blog/2014/08/29/test/">Test</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-08-29T01:52:00+08:00" pubdate data-updated="true">Aug 29<span>th</span>, 2014</time>
+        
+         | <a href="/blog/2014/08/29/test/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content">
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/08/29/predict-bid/">Predict_bid</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-08-29T01:25:00+08:00" pubdate data-updated="true">Aug 29<span>th</span>, 2014</time>
+        
+         | <a href="/blog/2014/08/29/predict-bid/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content">
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/04/10/factorization-machine/">Factorization Machine</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-04-10T17:00:00+08:00" pubdate data-updated="true">Apr 10<span>th</span>, 2014</time>
+        
+         | <a href="/blog/2014/04/10/factorization-machine/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content">
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/04/10/context-advertisment/">Context Advertisment</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-04-10T16:59:00+08:00" pubdate data-updated="true">Apr 10<span>th</span>, 2014</time>
+        
+         | <a href="/blog/2014/04/10/context-advertisment/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>上下文广告广告系统</p>
+
+<p>在”标准”的上下文广告系统中，我们以一次 pv 作为广告检索的出发点，即我们把一次 pv 作为一个广告检索的 case， 然后在这个过程中我们对这样一个 case 做出触发、CTR预估、排序。</p>
+
+<p>这样一种 case 的建立，即以一次pv作为一次广告检索出发点是否合理呢？</p>
+
+<p>我们知道搜索广告和联盟广告的一个重要区别在于搜索广告有着极强的触发信号，即每一次 pv 作为广告检索的 case 来理解，来触发，CTR预估，排序等等。而在联盟广告中，唯一的触发信号就是网民。如果我们在每一次联盟广告的检索过程中，都要经过触发，ctr预估，排序的话不仅会增加很多的运算代价，同时也忽略了网民在前后点击之间的关系。</p>
+
+<p>如果说以单次pv作为触发信号，对上下文广告来说，可能粒度确实过细了。</p>
+
+<p>如果对比搜索广告的话，搜索广告以一个query作为一个触发信号，因此我们以query触发方式来构建整个检索系统，是合乎情理的。
+对应的，如果说联盟广告以网民作为触发信号的话，那么是不是应该在每一个网民上作为建立触发、预估、排序呢？我觉得这是一个非常有意思的topic。</p>
+
+<p>即以用户为中心的广告检索系统。</p>
+
+<p>以网民为中心的广告检索系统，需要的是我们对网民的”兴趣”的一个理解。因此我们需要一个线下的挖掘技术来挖掘网民的需求。如何分析网民的需求呢？</p>
+
+<p>总的思路就是 网民 和 广告主 是广告系统的两端。
+1、我们能覆盖到的网民 同时我们也有的广告主 是我们的核心流量。也是最重要的部分。
+2、能覆盖到的网民，没有对应的广告主的部分，这部分是我们的重点拓展方向。
+3、有广告主，但是没有对应的网民部分，这部分是没办法的事情。</p>
+
+<p>Q2的point在如何分析 我们同时能覆盖到的网民和广告主，以及二者之间的关联
+网民：需要一个全网的覆盖数据。
+4 主要分析广告主对应的网民。
+	4.1 挑选核心网民(对核心账户贡献较多的网民)。
+	4.2 累计这些网民的浏览数据/query数据等互联网foot print.
+5 对网民的行为轨迹中，分析特征
+	5.1 分析网民的foot print数据，形成特征。
+	5.2 从这些特征出发，泛化分析额外的用户/作为新的触发特征。
+6 对网民和广告主之间关系进行分析。
+	6.1 给这些用户推荐合适的广告
+	6.2 backup</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/04/10/logistic-regression/">Logistic Regression</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-04-10T16:58:00+08:00" pubdate data-updated="true">Apr 10<span>th</span>, 2014</time>
+        
+         | <a href="/blog/2014/04/10/logistic-regression/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>logistic regression 的 prob 的定义是</p>
+
+<script type="math/tex; mode=display">
+p(y=1|x)=\cfrac{1}{1+e^{- \mathbf{w} \mathbf{x}}} \\
+p(y=-1|x)=\cfrac{1}{1+e^{\mathbf{w} \mathbf{x}}}
+</script>
+
+<p>整体loss是max-liklihood
+$$
+f(w) =  \sum log( {1+e^{-y \mathbf{w} \mathbf{x}}} )
+$$</p>
+
+<p>一阶倒数为
+$$
+\begin{aligned}
+\cfrac{ \partial f}{\partial w_i} = \sum \cfrac{-y x_i}{1+e^{y \mathbf{w} \mathbf{x}}} <br />
+ &amp;= \sum ((\cfrac{1}{1+e^{ - y \mathbf{w} \mathbf{x}}} - 1) y x_i)
+\end{aligned}
+$$ </p>
+
+<p>二阶倒数为
+$$
+\cfrac{\partial f}{\partial w_i \partial w_j} = \sum \cfrac{x_i x_j}{(1+e^{-y \mathbf{w} \mathbf{x}}) (1+e^{y \mathbf{w} \mathbf{x}})}
+$$</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/02/19/dist-auc/">Margin_auc</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-02-19T13:26:00+08:00" pubdate data-updated="true">Feb 19<span>th</span>, 2014</time>
+        
+         | <a href="/blog/2014/02/19/dist-auc/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>最近在想一些关于评价标准的问题，就是什么是一个 “好” 的分类器。机器学习中关于好的定义和标准有很多，比如最早的 accuracy，之后的 precision，recall，F1等等。不同的应用方法体现了我们对 <strong>好</strong> 这个概念的不同认识。</p>
+
+<pre><code>事实上在一个真实的机器学习问题中，如何确定一个 “好” 的概念，是最困难和重要的部分。
+</code></pre>
+
+<p>随着机器学习应用的发展，现实中很多应用都有着类别不平衡等各种问题，比如在广告点击率预估的问题中，clk 和 noclk 之间的数据差别是很大的，即使是凤巢首条广告 10%+ 的点击率，也依然有着较为严重的类别不平衡的问题； 这就导致了 precision 等评价指标并不能代表现实应用意义上的好。于是机器学习界引入了 AUC 作为评价指标。</p>
+
+<p>AUC 的全称应该是 Area Under ROC Cruve. 就是 ROC 曲线的线下面积。ROC曲线则是以(TPR，FPR) 的点作为连线，画出的一条曲线。</p>
+
+<script type="math/tex; mode=display">
+TPR = \cfrac{TP}{TP+FN} \\
+FPR = \cfrac{FP}{FP+TN}
+</script>
+
+<p>在分类问题中这种计算方法，其实就是我们把决策面在测试集中不停的移动，然后看在不同的决策面下，判定为 + 的那些 instance 中，有多少是真的正例(TP)，有多少是假的正例（FP）。比如在广告预估系统中，我们预估出一个 instance 被点击的概率 p，然后我们不停的改变判定为点击的 p 的阈值，比如第一次计算 p_threshold = 0.9 的情况下，我们计算所有 p &gt; 0.9 的 instance 中，有多少 instance 是真的点击，而有多少的 instance是未点击。然后经过 (TP+FN, FP+TN) 的归一化之后就是一个点。然后我们不停的改变 p_threshold 的阈值得到一系列点，最后把这些点连成 ROC 曲线，计算 ROC 曲线线下面积，得到AUC。</p>
+
+<p>这种计算方法隐含的一个假设就是 <strong>排在最前面的那些 instance 的准确性是最重要的</strong>，因为在累加计算的过程中，第一个点总会累加到后面的所有点上，因此头部的正确性是非常重要的。而在实际应用的过程中（比如广告和视频推荐），我们会发现其实排在最前面的那些 instance 之间的相对关系来说，并不是最重要的。比如广告A 和 广告B 的预估 CTR 分别为 0.9 和 0.8，其实我们根本不关注 0.9 和 0.8 这两个 instance 谁更重要，因为这两个广告如果高的预估CTR， 不管谁比谁更高，最终都是会展现出去的。真正值得我们关心的是在分界面附近的那些广告， 即该广告的展现和不展现都是在模棱两可的时候，如果我们的分类器能把这些 case 给区分的比较清楚，这才是真正的善莫大焉。</p>
+
+<p>因此我们计算一个 dist-auc, 也就是对原始的 auc 做一些计算上的改变，我们从分界面附近的分类器算起，从分界面往两边计算，计算出一个整体的 auc 出来，这样就可以使得模型的计算方法和我们的线上效果之间的关系更加密切。</p>
+
+<p>回过头来看，这种不关心远离分界面之间的 instance 的计算方法，其实有点类似 margin 的思路，那么是不是如果我们使用 hinge-loss，来代替常规的 log-loss，在广告预估系统上会取得一个更好的效果呢？</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
       <h1 class="entry-title"><a href="/blog/2014/02/19/owlqn/">Owlqn</a></h1>
     
     
@@ -151,7 +455,14 @@ p = -\nabla ^2 f_k^{-1} \nabla f_k
 \nabla ^2 f_k^{-1} = B_{k+1} (x_{k+1} - x_k) = \nabla f_{k+1} - \nabla f_k 
 </script>
 
-<p>令$ s_k = x<em>{k+1} - x_k $ and $ y_k = \nabla f</em>{k+1} - \nabla f_k $ 我们就得到 $B_{k+1} s_k = y_k$ 这就是著名的切线公式。</p>
+<p>令 </p>
+
+<script type="math/tex; mode=display">
+s_k = x_ {k+1} - x_k \\
+y_k = \nabla f_{k+1} - \nabla f_k 
+</script>
+
+<p>我们就得到 $B_{k+1} s_k = y_k$ 这就是著名的切线公式。</p>
 
 <p>注意我们在得到 newton direction 的过程中，需要的一个条件就是hessian 矩阵正定；同是考虑到，求偏导次序不影响结果，因此hessian 矩阵还有正对称的性质。</p>
 
@@ -610,265 +921,9 @@ $$</p>
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/02/05/liblinear-usage/">Liblinear_usage</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-02-05T19:12:00+08:00" pubdate data-updated="true">Feb 5<span>th</span>, 2014</time>
-        
-         | <a href="/blog/2014/02/05/liblinear-usage/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>对大规模稀疏数据要加 -l 0
--s6 l1-regularized logistic regression
--g g -n n : to generate the experiment result of CDN with shrinking technique</p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/02/03/l1lr-optimization/">L1LR-Optimization</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-02-03T23:28:00+08:00" pubdate data-updated="true">Feb 3<span>rd</span>, 2014</time>
-        
-         | <a href="/blog/2014/02/03/l1lr-optimization/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><code>A comparision of Optimization Methods and Software for Large-Scale L1-regularized Linear Classification</code></p>
-
-<p>台大 <strong>林智仁</strong> 的文章，趁春节期间拜读一下。</p>
-
-<p>优化目标是</p>
-
-<script type="math/tex; mode=display">
-\min \limits_{\mathbf{w}} \ f(\mathbf{w}) = ||\mathbf{w}||_1 + C \sum \limits_{i=1}^{l}\xi(\mathbf{w};\mathbf{x}_i,y_i)
-</script>
-
-<p>对
-$$
-\xi(\mathbf{w};\mathbf{x}_i,y_i)
-$$
-的要求是 <strong>非负，且凸，一阶连续可微</strong>(为什么这三个要求？Appendix A表示这样的话，有至少有一个全局最优解)，这里主要讨论的两个loss就是 <strong>log-loss</strong> 和 <strong>l2-loss</strong> .</p>
-
-<h2 id="decomposition">Decomposition类的方法</h2>
-
-<p>每次选择某些维度进行更新</p>
-
-<h3 id="cyclic-coordinate-descent">Cyclic Coordinate Descent</h3>
-
-<p>选择优化维度 <script type="math/tex"> \mathbf{e}_j </script> 之后，通过优化
-$$
-\min \limits_{z} g_j(z) = f(\mathbf{w} + z \mathbf{e}_j) - f(\mathbf{w}) = |w_j^{k,j} + z| - |w_j^{k,j}| + L_j(z;\mathbf{w}^{k,j}) - L_j(0;\mathbf{w}^{k,j})
-$$
-从这个式子中，我们可以得到一个重要的信息，即某个维度 <script type="math/tex">\mathbf{e}_j</script> 在当前迭代轮是否有效。有效的意思就是 <script type="math/tex">z=0</script> 是上式的最优解——当<script type="math/tex">z=0</script>是上式的最优解的时候，我们就知道当然轮在当前维度上，不需要移动。<script type="math/tex">z=0</script>是上式的最优解的当且仅当：</p>
-
-<p>$$
-L_j^a (0) + 1 = 0, \ w_j^{k,j} &gt; 0
-$$
-$$
-L_j^a (0) - 1 = 0, \ w_j^{k,j} &lt; 0
-$$
-$$
--1 \leq L_j^a (0) + 1 \leq 1, \ w_j^{k,j} = 0
-$$</p>
-
-<p>这个函数在 <script type="math/tex"> z = -w_j </script> 的时候不可微
-得到在维度 <script type="math/tex"> \mathbf{e}_j </script> 上移动的距离</p>
-
-<p><code>Large-scale Bayesian logistic regression for text categorization</code> 中提出了BBR方法。BBR使用trust region和 一维牛顿step来解上面的问题。
-CDN是扩展自<code>Coordinate descent method for large-scale L2-loss linear SVM</code>的方法，原方法使用一维newton direction+线性搜索来解决上面的问题，目标是l2约束的问题。
-<code>A coordinate gradient descent method for nonsmooth convex optimization problems in machine learning</code> 文章中提出了一个通用的decomposition的框架，可以同时选择多个维度计算，CDN是其中的一个特例。</p>
-
-<h3 id="variable-selection-using-gradient-information">Variable selection using Gradient information</h3>
-<p>使用梯度信息选择一组变量， Gauss-Southwell rule. 在使用了梯度信息之后，可以缩减迭代轮数，但是因为要计算梯度信息，因此单轮时间变长。
-<code>A coordinate gradient descent method for l1-regularized convex optimization</code> 里面就是用了 CGD-GS方法， coordinate gradient descent &amp; Gauss-Southwell rule</p>
-
-<h3 id="active-set">Active Set</h3>
-<p>active set method 的特殊之处在于区分了0权重和非0权重特征，使得计算加快。
-Grafting就是active set method for Log Loss</p>
-
-<h2 id="section">解带约束的优化</h2>
-
-<h3 id="section-1">光滑约束</h3>
-
-<p>问题转化为
-$$
-\min \limits_{\mathbf{w}^+,\mathbf{w}^-} \sum _{j=1}^n w_j^+ + \sum _{j=1}^n w_j^- + C \sum _{i=1}^l \xi (\mathbf{w}^+ - \mathbf{w}^-; \mathbf{x}_i, y_i)
-$$</p>
-
-<p>subject to 
-$$
- w_j^+ \geq 0, w_j^- \geq 0, j = 1,…,n 
-$$</p>
-
-<p>这个转化相当巧妙的把不可微的函数，拆了两个可微的函数的和</p>
-
-<p><code>An interior point method for large-scale l1-regularized logistic regression</code> 把这个问题转化为
-$$
-\min \limits_ {\mathbf{w}, \mathbf{u}} \sum _{j=1}^n u_j + C \sum _{i=1}^l \xi (\mathbf{w}; \mathbf{x} _i, y_i)
-$$</p>
-
-<p>subject to
-$$
--u_j \leq w_j \leq u_j, j = 1,…,n
-$$
-然后使用interior point方法来解这个问题。</p>
-
-<h3 id="section-2">不光滑的约束</h3>
-
-<script type="math/tex; mode=display">
-\min \limits_ {\mathbf{w}} \sum _{i=1}^l \xi(\mathbf{w};\mathbf{x}_i, y_i)
-</script>
-
-<p>subject to</p>
-
-<script type="math/tex; mode=display">
-||\mathbf{w}||_1 \leq K.
-</script>
-
-<p>Active Set类的方法 <code>The generalized LASSO</code> 也可以被用来解决类似问题，</p>
-
-<h2 id="section-3">其他方法</h2>
-
-<p>EM
-随机梯度下降<code>Stochastic methods for l1 regularized loss minimization</code> <code>Sparse online learning via truncated gradient</code>
-OWLQN
-Hybrid Methods
-Quadratic Approximation Followed by coordinate descent
-Cutting Plane methods
-Approximating L1 regularization by l2 regularization
-Solution Path</p>
-
-<p>提供了语法高亮和方便的快捷键功能，给您最好的 Markdown 编写体验。</p>
-
-<p>来试一下：</p>
-
-<ul>
-  <li><strong>粗体</strong> (<code>Ctrl+B</code>) and <em>斜体</em> (<code>Ctrl+I</code>)</li>
-  <li>引用 (<code>Ctrl+Q</code>)</li>
-  <li>代码块 (<code>Ctrl+K</code>)</li>
-  <li>标题 1, 2, 3 (<code>Ctrl+1</code>, <code>Ctrl+2</code>, <code>Ctrl+3</code>)</li>
-  <li>列表 (<code>Ctrl+U</code> and <code>Ctrl+Shift+O</code>)</li>
-</ul>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2014/02/03/l1lr-optimization/">Read on &rarr;</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/02/03/weiwei/">MarkDown Examples</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-02-03T15:16:00+08:00" pubdate data-updated="true">Feb 3<span>rd</span>, 2014</time>
-        
-         | <a href="/blog/2014/02/03/weiwei/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>这是一个普通段落：</p>
-
-<pre><code>这是一个代码区块。
-	撒旦反抗
-</code></pre>
-
-<p>Google means $10^{100}$</p>
-
-<p>A Cross Product Formula</p>
-
-<script type="math/tex; mode=display">% <![CDATA[
-
-\mathbf{V}_1 \times \mathbf{V}_2 =  \begin{vmatrix}
-\mathbf{i} & \mathbf{j} & \mathbf{k} \\\
-\frac{\partial X}{\partial u} &  \frac{\partial Y}{\partial u} & 0 \\\
-\frac{\partial X}{\partial v} &  \frac{\partial Y}{\partial v} & 0
-\end{vmatrix}
- %]]></script>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2014/02/03/weiwei/">Read on &rarr;</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
+    
+      <a class="prev" href="/blog/page/2/">&larr; Older</a>
     
     <a href="/blog/archives">Blog Archives</a>
     
@@ -881,23 +936,23 @@ Solution Path</p>
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2014/02/19/owlqn/">owlqn</a>
+        <a href="/blog/2014/08/29/test/">test</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2014/02/11/model-selection/">model_selection</a>
+        <a href="/blog/2014/08/29/predict-bid/">predict_bid</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2014/02/11/ensemble/">Adaboost 漫谈</a>
+        <a href="/blog/2014/04/10/factorization-machine/">Factorization machine</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2014/02/09/l1r-lr-optimization/">l1r-lr optimization</a>
+        <a href="/blog/2014/04/10/context-advertisment/">Context Advertisment</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2014/02/05/liblinear-usage/">liblinear_usage</a>
+        <a href="/blog/2014/04/10/logistic-regression/">logistic regression</a>
       </li>
     
   </ul>
