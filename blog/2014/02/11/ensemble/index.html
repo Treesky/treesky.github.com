@@ -1,0 +1,379 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Adaboost 漫谈 - Running</title>
+  <meta name="author" content="Treesky">
+
+  
+  <meta name="description" content="from Ensemble Methods: Foundations and Algorithms 提到 ensemble 类的算法，第一个要提到的就是 boosting, boosting 类算法的最初诞生，来自于 Kearns and Valiant [1989]提出的一个理论上的问题，就是 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://Treesky.github.com/blog/2014/02/11/ensemble/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Running" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<style TYPE="text/css">
+code.has-jax {font: inherit; font-size: 100%; background: inherit; border: inherit;}
+</style>
+<!-- mathjax config similar to math.stackexchange -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  jax: ["input/TeX", "output/HTML-CSS"],
+  tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$']],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  messageStyle: "none",
+  "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-47905022-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Running</a></h1>
+  
+    <h2>Fear cuts deeper than swords</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:Treesky.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Adaboost 漫谈</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-02-11T23:24:00+08:00" pubdate data-updated="true">Feb 11<span>th</span>, 2014</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>from <code>Ensemble Methods: Foundations and Algorithms</code></p>
+
+<p>提到 ensemble 类的算法，第一个要提到的就是 boosting, boosting 类算法的最初诞生，来自于 Kearns and Valiant [1989]提出的一个理论上的问题，就是 <em>weakly learnalbe 和 strongly learnable 这两类问题是否等价</em>，由于在现实应用中，一个 weakly 的分类器总是很容易得到的，但是一个 strongly 的分类器却很难得到，因此如果上面那个问题的答案是 “是” 的话，那么任何一个弱分类器都有潜力成为一个强分类器。因此上述理论问题的答案，对真实应用有着相当程度的指导意义。Schapire [1990] 通过构造的方法，回答上上面的问题，构造出来的算法框架就是 boosting. </p>
+
+<p>在 boosting 类算法中，最有名的就属 adaboost 了。 Friedman [2000] 的出发点就是最小化 <strong>exponential loss</strong></p>
+
+<script type="math/tex; mode=display">
+l_{exp}(h \| D) = E_{x ～ D} [e^{-f(x)h(x)}]
+</script>
+
+<p>我们首先解释为什么使用 <strong>exponential loss</strong></p>
+
+<script type="math/tex; mode=display">
+\cfrac{\partial e^{-f(x)H(x)}}{\partial H(x)} = -f(x) e^{-f(x)}H(x)
+</script>
+
+<p>$H(x)$ 是我们要求的模型，$f(x)$ 代表真实的分布函数，$f(x)$ 的取值在分类的情况下，只有两种 ${-1,+1}$，因此</p>
+
+<script type="math/tex; mode=display">
+-f(x) e^{-f(x)H(x)} = -e^{-H(x)}P(f(x)=1 \| x) + e^{H(x)} P(f(x)=-1 \| x)
+</script>
+
+<p>在优化的过程中，我们强制如上的 $ \text{log loss } = 0$ 的时候，可以得到如下的解</p>
+
+<script type="math/tex; mode=display">
+H(x) = \cfrac{1}{2} ln \cfrac{P(f(x) = 1 \| x)}{P(f(x) = -1 \| x)}
+</script>
+
+<p>因此</p>
+
+<script type="math/tex; mode=display">
+sign(H(x)) = sign(\cfrac{1}{2} ln \cfrac{P(f(x) = 1 \| x)}{P(f(x) = -1 \| x)})
+</script>
+
+<p>也就是当 $P(f(x)=1 | x) &gt; P(f(x)=-1 | x)$ 的时候 $sign(H(x)) = 1$，而 $P(f(x)=1 | x) &lt; P(f(x)=-1 | x)$ 的时候 $sign(H(x)) = -1$，而这个结果就是贝叶斯分类器的结果，也就是理论上的最优结果。</p>
+
+<p>因此我们就得出结论，<strong>优化 log loss 和 优化bayesian 分类错误率是一致的</strong>，而这也是 Adaboost 的所有的出发点。</p>
+
+<p>Adaboost 在整个算法过程中主要分为两步，第一步 <strong>求得$h_t(x)$的权重$\alpha_t$</strong> ，第二步在 <strong>$H_t$ 的基础上求得一个新的 <script type="math/tex">h_{t+1}</script></strong> ，使得新的 $h_{t+1}$ 可以弥补 $$H_t$ 的一些不足</p>
+
+<p>在第一步的情况下，我们已经得到了$h_t$，要求得$\alpha _t$使得$\alpha _t * h_t$ 可以最小化 log loss.</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+
+\begin{aligned}
+l_{exp}(\alpha _t h_t \| D_t) &= E_{x \sim D_t}[e^{-f(x) \alpha _t h_t(x)}] \\
+&= e^{-\alpha_t} P_{x \sim D_t}(f(x)= h_t(x)) + e^{\alpha _t} P_{x \sim D_t}(f(x) \ne h_t(x)) \\
+&= e^{-\alpha_t}(1-\epsilon _t) + e^{\alpha _t} \epsilon _t
+\end{aligned}
+ %]]></script>
+
+<p>上式对 $\alpha _t$ 求导之后强制为0，则</p>
+
+<script type="math/tex; mode=display">
+\cfrac{\partial l_{exp}(\alpha _t h_t \| D_t)}{\partial \alpha _t} = -e^{-\alpha _t}(1-\epsilon _t) + e^{\alpha _t} \epsilon _t = 0 \\
+\alpha_t = \cfrac{1}{2} ln(\cfrac{1-\epsilon _t}{\epsilon _t})
+</script>
+
+<p>得到的 $\alpha _t$ 就是 Adaboost 中对基分类器的权重公式。
+从这个公式中，我们要可以朴素的看到，这是一个从错误率中计算得到的，正确率越高，则权重越大；准确率越低，则权重越小。从这个角度上来说，也是 make sense 的。</p>
+
+<p>接下来，我们从 $H _{t-1}$ 来计算 $h _t$ ( $H _{t-1}$ 就是前 $t-1$ 轮的基分类器合并成的分类器)，和计算 $\alpha _t$ 一样，我们来最小化 exp loss：</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+
+\begin{aligned}
+l_{exp}(H_{t-1} + h_t \| D) &= E_{x \sim D}[e^{-f(x)(H_{t-1}(x)+h_t(x))}] \\
+&= E_{x \sim D}[e^{-f(x)H_{t-1}(x)} e^{-f(x)h_t(x)}] \\
+&= E_{x \sim D}[e^{-f(x)H_{t-1}(x)}(1-f(x)h_t(x)+\cfrac{f(x)^2 h_t(x)^2}{2})]\text{   对 } e^{-f(x)h_t(x)} \text{ 泰勒展开} \\
+&= E_{x \sim D}[e^{-f(x)H_{t-1}(x)}(1-f(x)h_t(x) + \cfrac{1}{2})] \text{   注意} f(x)^2 = 1 \text{   } h_t(x)^2 = 1
+\end{aligned}
+ %]]></script>
+
+<p>因此最“理想”的 $h_t(x)$ 就是</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+
+\begin{aligned}
+h_t(x) &= arg \min \limits _h l_{exp} (H _{t-1} + h \| D) \\
+&= arg \min _h E_{x \sim D}[e^{-f(x)H_{t-1}(x)}(1-f(x)h(x) + \cfrac{1}{2})] \\
+&= arg \max _h E_{x \sim D}[e^{-f(x)H_{t-1}(x)}f(x)h(x)] \\
+&= arg \max _h E_{x \sim D}[\cfrac{e^{-f(x)H_{t-1}(x)}}{E_{x \sim D}[e^{-f(x)H_{t-1}(x)}]} f(x)h(x)]
+\end{aligned}
+ %]]></script>
+
+<p>我们让 </p>
+
+<script type="math/tex; mode=display">
+D _t(x) = \cfrac{D(x)e^{-f(x)H_{t-1}(x)}}{E_{x \sim D}[e^{-f(x)H_{t-1}(x)}]}
+</script>
+
+<p>的话</p>
+
+<script type="math/tex; mode=display">
+h_t(x) = arg \max \limits _h E_{x \sim D_t} [f(x)h(x)]
+</script>
+
+<p>从 $D$ 到 $D_t$ 的这一步显得非常的巧妙。纵观整个求解 $h_t$ 的过程，我们可以看到首先在 loss 的建立部分，我们是给 $h_t$ 解决 $H_{t-1}$ 不能解决的instance上以额外的权重，使得 $h_t$ 可以改善整个 $H_t$，这是make sense的，也就是说新的分类器更关注于以往的 ensemble 分类器所解决不了的问题。
+接下来，用一个 class-imbalance 里面非常常用的技巧，就是instance的loss加权，我们可以通过对 instance 的分布做改变，down-sampling or up-sampling 来达到完全相同的效果。但是经过这样一个简单的变换之后，整个算法的过程就显得简洁而优美。这一步真是非常巧妙。</p>
+
+<p>接下来还有一些收尾工作，就是我们从原始分布 $D$ 得到 $h_t$ 需要的分布 $D_t$，这总还不够优美，我们希望得到一个递推公式，从 $D_{t-1}$ 得到 $D_t$，具体如下</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+
+\begin{aligned}
+D_{t+1}(x) &= \cfrac{D(x) e^{-f(x)H_t(x)}}{E_{x \sim D}[e ^{-f(x)H_t(x)}]} \\
+&= \cfrac{D(x)e^{-f(x)H_{t-1}(x)e^{-f(x) \alpha_t h_t(x)}}}{E_{x \sim D}[e^{-f(x)H_t(x)}]} \\
+&= D_t(x) \cdot e^{-f(x) \alpha _t h_t(x)} \cfrac{E_{x \sim D[e^{-f(x) H_{t-1}(x)}]}}{E_{x \sim D}[e^{-f(x)H_t(x)}]}
+\end{aligned}
+ %]]></script>
+
+<p>而上述公式也正是 Adaboost 调整 instance 分布的公式。</p>
+
+<p>从整体上，我们可以看到我们首先证明了 exp loss 和 bayesian 最优错误率的一致性；然后从 exp loss 出发得到了 $ \alpha _t$ 和 $ D _t(h _t) $ 的更新公式。因此我们可以看到 Adaboost 有很强的在训练数据上得到 Bayesian 最优错误率的能力，但是这个达到这个最优错误率是否就意味着不会过拟合，这个我认为还有另外一个必要条件，就是 <strong>训练数据和测试数据的分布一致</strong>， Adaboost 对这个 <strong>一致性</strong> 非常敏感，只要分布稍有差别，就非常容易过拟合，因此当训练数据和测试数据的分布不一致的情况下， 我们就需要一些额外的措施来帮助我们避免过拟合。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Treesky</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-02-11T23:24:00+08:00" pubdate data-updated="true">Feb 11<span>th</span>, 2014</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://Treesky.github.com/blog/2014/02/11/ensemble/" data-via="" data-counturl="http://Treesky.github.com/blog/2014/02/11/ensemble/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/02/09/l1r-lr-optimization/" title="Previous Post: l1r-lr optimization">&laquo; l1r-lr optimization</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2014/02/11/model-selection/" title="Next Post: model_selection">model_selection &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/08/29/test/">test</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/08/29/predict-bid/">predict_bid</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/10/factorization-machine/">Factorization machine</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/10/context-advertisment/">Context Advertisment</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/10/logistic-regression/">logistic regression</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - Treesky -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'treesky';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://Treesky.github.com/blog/2014/02/11/ensemble/';
+        var disqus_url = 'http://Treesky.github.com/blog/2014/02/11/ensemble/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

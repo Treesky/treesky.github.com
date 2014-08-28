@@ -1,0 +1,286 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>margin_auc - Running</title>
+  <meta name="author" content="Treesky">
+
+  
+  <meta name="description" content="最近在想一些关于评价标准的问题，就是什么是一个 “好” 的分类器。机器学习中关于好的定义和标准有很多，比如最早的 accuracy，之后的 precision，recall，F1等等。不同的应用方法体现了我们对 好 这个概念的不同认识。 事实上在一个真实的机器学习问题中，如何确定一个 “好” &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://Treesky.github.com/blog/2014/02/19/dist-auc/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Running" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<style TYPE="text/css">
+code.has-jax {font: inherit; font-size: 100%; background: inherit; border: inherit;}
+</style>
+<!-- mathjax config similar to math.stackexchange -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  jax: ["input/TeX", "output/HTML-CSS"],
+  tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$']],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  messageStyle: "none",
+  "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-47905022-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Running</a></h1>
+  
+    <h2>Fear cuts deeper than swords</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:Treesky.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Margin_auc</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-02-19T13:26:00+08:00" pubdate data-updated="true">Feb 19<span>th</span>, 2014</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>最近在想一些关于评价标准的问题，就是什么是一个 “好” 的分类器。机器学习中关于好的定义和标准有很多，比如最早的 accuracy，之后的 precision，recall，F1等等。不同的应用方法体现了我们对 <strong>好</strong> 这个概念的不同认识。</p>
+
+<pre><code>事实上在一个真实的机器学习问题中，如何确定一个 “好” 的概念，是最困难和重要的部分。
+</code></pre>
+
+<p>随着机器学习应用的发展，现实中很多应用都有着类别不平衡等各种问题，比如在广告点击率预估的问题中，clk 和 noclk 之间的数据差别是很大的，即使是凤巢首条广告 10%+ 的点击率，也依然有着较为严重的类别不平衡的问题； 这就导致了 precision 等评价指标并不能代表现实应用意义上的好。于是机器学习界引入了 AUC 作为评价指标。</p>
+
+<p>AUC 的全称应该是 Area Under ROC Cruve. 就是 ROC 曲线的线下面积。ROC曲线则是以(TPR，FPR) 的点作为连线，画出的一条曲线。</p>
+
+<script type="math/tex; mode=display">
+TPR = \cfrac{TP}{TP+FN} \\
+FPR = \cfrac{FP}{FP+TN}
+</script>
+
+<p>在分类问题中这种计算方法，其实就是我们把决策面在测试集中不停的移动，然后看在不同的决策面下，判定为 + 的那些 instance 中，有多少是真的正例(TP)，有多少是假的正例（FP）。比如在广告预估系统中，我们预估出一个 instance 被点击的概率 p，然后我们不停的改变判定为点击的 p 的阈值，比如第一次计算 p_threshold = 0.9 的情况下，我们计算所有 p &gt; 0.9 的 instance 中，有多少 instance 是真的点击，而有多少的 instance是未点击。然后经过 (TP+FN, FP+TN) 的归一化之后就是一个点。然后我们不停的改变 p_threshold 的阈值得到一系列点，最后把这些点连成 ROC 曲线，计算 ROC 曲线线下面积，得到AUC。</p>
+
+<p>这种计算方法隐含的一个假设就是 <strong>排在最前面的那些 instance 的准确性是最重要的</strong>，因为在累加计算的过程中，第一个点总会累加到后面的所有点上，因此头部的正确性是非常重要的。而在实际应用的过程中（比如广告和视频推荐），我们会发现其实排在最前面的那些 instance 之间的相对关系来说，并不是最重要的。比如广告A 和 广告B 的预估 CTR 分别为 0.9 和 0.8，其实我们根本不关注 0.9 和 0.8 这两个 instance 谁更重要，因为这两个广告如果高的预估CTR， 不管谁比谁更高，最终都是会展现出去的。真正值得我们关心的是在分界面附近的那些广告， 即该广告的展现和不展现都是在模棱两可的时候，如果我们的分类器能把这些 case 给区分的比较清楚，这才是真正的善莫大焉。</p>
+
+<p>因此我们计算一个 dist-auc, 也就是对原始的 auc 做一些计算上的改变，我们从分界面附近的分类器算起，从分界面往两边计算，计算出一个整体的 auc 出来，这样就可以使得模型的计算方法和我们的线上效果之间的关系更加密切。</p>
+
+<p>回过头来看，这种不关心远离分界面之间的 instance 的计算方法，其实有点类似 margin 的思路，那么是不是如果我们使用 hinge-loss，来代替常规的 log-loss，在广告预估系统上会取得一个更好的效果呢？</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Treesky</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-02-19T13:26:00+08:00" pubdate data-updated="true">Feb 19<span>th</span>, 2014</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://Treesky.github.com/blog/2014/02/19/dist-auc/" data-via="" data-counturl="http://Treesky.github.com/blog/2014/02/19/dist-auc/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/02/19/owlqn/" title="Previous Post: owlqn">&laquo; owlqn</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2014/04/10/logistic-regression/" title="Next Post: logistic regression">logistic regression &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/08/29/test/">test</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/08/29/predict-bid/">predict_bid</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/10/factorization-machine/">Factorization machine</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/10/context-advertisment/">Context Advertisment</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/10/logistic-regression/">logistic regression</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - Treesky -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'treesky';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://Treesky.github.com/blog/2014/02/19/dist-auc/';
+        var disqus_url = 'http://Treesky.github.com/blog/2014/02/19/dist-auc/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

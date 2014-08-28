@@ -1,0 +1,403 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>L1LR-Optimization - Running</title>
+  <meta name="author" content="Treesky">
+
+  
+  <meta name="description" content="A comparision of Optimization Methods and Software for Large-Scale L1-regularized Linear Classification 台大 林智仁 的文章，趁春节期间拜读一下。 优化目标是 \min \limits_{\ &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://Treesky.github.com/blog/2014/02/03/l1lr-optimization/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Running" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<style TYPE="text/css">
+code.has-jax {font: inherit; font-size: 100%; background: inherit; border: inherit;}
+</style>
+<!-- mathjax config similar to math.stackexchange -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  jax: ["input/TeX", "output/HTML-CSS"],
+  tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$']],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  messageStyle: "none",
+  "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-47905022-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Running</a></h1>
+  
+    <h2>Fear cuts deeper than swords</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:Treesky.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">L1LR-Optimization</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-02-03T23:28:00+08:00" pubdate data-updated="true">Feb 3<span>rd</span>, 2014</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p><code>A comparision of Optimization Methods and Software for Large-Scale L1-regularized Linear Classification</code></p>
+
+<p>台大 <strong>林智仁</strong> 的文章，趁春节期间拜读一下。</p>
+
+<p>优化目标是</p>
+
+<script type="math/tex; mode=display">
+\min \limits_{\mathbf{w}} \ f(\mathbf{w}) = ||\mathbf{w}||_1 + C \sum \limits_{i=1}^{l}\xi(\mathbf{w};\mathbf{x}_i,y_i)
+</script>
+
+<p>对
+$$
+\xi(\mathbf{w};\mathbf{x}_i,y_i)
+$$
+的要求是 <strong>非负，且凸，一阶连续可微</strong>(为什么这三个要求？Appendix A表示这样的话，有至少有一个全局最优解)，这里主要讨论的两个loss就是 <strong>log-loss</strong> 和 <strong>l2-loss</strong> .</p>
+
+<h2 id="decomposition">Decomposition类的方法</h2>
+
+<p>每次选择某些维度进行更新</p>
+
+<h3 id="cyclic-coordinate-descent">Cyclic Coordinate Descent</h3>
+
+<p>选择优化维度 <script type="math/tex"> \mathbf{e}_j </script> 之后，通过优化
+$$
+\min \limits_{z} g_j(z) = f(\mathbf{w} + z \mathbf{e}_j) - f(\mathbf{w}) = |w_j^{k,j} + z| - |w_j^{k,j}| + L_j(z;\mathbf{w}^{k,j}) - L_j(0;\mathbf{w}^{k,j})
+$$
+从这个式子中，我们可以得到一个重要的信息，即某个维度 <script type="math/tex">\mathbf{e}_j</script> 在当前迭代轮是否有效。有效的意思就是 <script type="math/tex">z=0</script> 是上式的最优解——当<script type="math/tex">z=0</script>是上式的最优解的时候，我们就知道当然轮在当前维度上，不需要移动。<script type="math/tex">z=0</script>是上式的最优解的当且仅当：</p>
+
+<p>$$
+L_j^a (0) + 1 = 0, \ w_j^{k,j} &gt; 0
+$$
+$$
+L_j^a (0) - 1 = 0, \ w_j^{k,j} &lt; 0
+$$
+$$
+-1 \leq L_j^a (0) + 1 \leq 1, \ w_j^{k,j} = 0
+$$</p>
+
+<p>这个函数在 <script type="math/tex"> z = -w_j </script> 的时候不可微
+得到在维度 <script type="math/tex"> \mathbf{e}_j </script> 上移动的距离</p>
+
+<p><code>Large-scale Bayesian logistic regression for text categorization</code> 中提出了BBR方法。BBR使用trust region和 一维牛顿step来解上面的问题。
+CDN是扩展自<code>Coordinate descent method for large-scale L2-loss linear SVM</code>的方法，原方法使用一维newton direction+线性搜索来解决上面的问题，目标是l2约束的问题。
+<code>A coordinate gradient descent method for nonsmooth convex optimization problems in machine learning</code> 文章中提出了一个通用的decomposition的框架，可以同时选择多个维度计算，CDN是其中的一个特例。</p>
+
+<h3 id="variable-selection-using-gradient-information">Variable selection using Gradient information</h3>
+<p>使用梯度信息选择一组变量， Gauss-Southwell rule. 在使用了梯度信息之后，可以缩减迭代轮数，但是因为要计算梯度信息，因此单轮时间变长。
+<code>A coordinate gradient descent method for l1-regularized convex optimization</code> 里面就是用了 CGD-GS方法， coordinate gradient descent &amp; Gauss-Southwell rule</p>
+
+<h3 id="active-set">Active Set</h3>
+<p>active set method 的特殊之处在于区分了0权重和非0权重特征，使得计算加快。
+Grafting就是active set method for Log Loss</p>
+
+<h2 id="section">解带约束的优化</h2>
+
+<h3 id="section-1">光滑约束</h3>
+
+<p>问题转化为
+$$
+\min \limits_{\mathbf{w}^+,\mathbf{w}^-} \sum _{j=1}^n w_j^+ + \sum _{j=1}^n w_j^- + C \sum _{i=1}^l \xi (\mathbf{w}^+ - \mathbf{w}^-; \mathbf{x}_i, y_i)
+$$</p>
+
+<p>subject to 
+$$
+ w_j^+ \geq 0, w_j^- \geq 0, j = 1,…,n 
+$$</p>
+
+<p>这个转化相当巧妙的把不可微的函数，拆了两个可微的函数的和</p>
+
+<p><code>An interior point method for large-scale l1-regularized logistic regression</code> 把这个问题转化为
+$$
+\min \limits_ {\mathbf{w}, \mathbf{u}} \sum _{j=1}^n u_j + C \sum _{i=1}^l \xi (\mathbf{w}; \mathbf{x} _i, y_i)
+$$</p>
+
+<p>subject to
+$$
+-u_j \leq w_j \leq u_j, j = 1,…,n
+$$
+然后使用interior point方法来解这个问题。</p>
+
+<h3 id="section-2">不光滑的约束</h3>
+
+<script type="math/tex; mode=display">
+\min \limits_ {\mathbf{w}} \sum _{i=1}^l \xi(\mathbf{w};\mathbf{x}_i, y_i)
+</script>
+
+<p>subject to</p>
+
+<script type="math/tex; mode=display">
+||\mathbf{w}||_1 \leq K.
+</script>
+
+<p>Active Set类的方法 <code>The generalized LASSO</code> 也可以被用来解决类似问题，</p>
+
+<h2 id="section-3">其他方法</h2>
+
+<p>EM
+随机梯度下降<code>Stochastic methods for l1 regularized loss minimization</code> <code>Sparse online learning via truncated gradient</code>
+OWLQN
+Hybrid Methods
+Quadratic Approximation Followed by coordinate descent
+Cutting Plane methods
+Approximating L1 regularization by l2 regularization
+Solution Path</p>
+
+<p>提供了语法高亮和方便的快捷键功能，给您最好的 Markdown 编写体验。</p>
+
+<p>来试一下：</p>
+
+<ul>
+  <li><strong>粗体</strong> (<code>Ctrl+B</code>) and <em>斜体</em> (<code>Ctrl+I</code>)</li>
+  <li>引用 (<code>Ctrl+Q</code>)</li>
+  <li>代码块 (<code>Ctrl+K</code>)</li>
+  <li>标题 1, 2, 3 (<code>Ctrl+1</code>, <code>Ctrl+2</code>, <code>Ctrl+3</code>)</li>
+  <li>列表 (<code>Ctrl+U</code> and <code>Ctrl+Shift+O</code>)</li>
+</ul>
+
+<!--more-->
+
+<h3 id="section-4">实时预览，所见即所得</h3>
+
+<p>无需猜测您的 <a href="http://markdownpad.com">语法</a> 是否正确；每当您敲击键盘，实时预览功能都会立刻准确呈现出文档的显示效果。</p>
+
+<h3 id="section-5">自由定制</h3>
+
+<p>100% 可自定义的字体、配色、布局和样式，让您可以将 MarkdownPad 配置的得心应手。</p>
+
+<h3 id="markdown-">为高级用户而设计的稳定的 Markdown 编辑器</h3>
+
+<p>MarkdownPad 支持多种 Markdown 解析引擎，包括 标准 Markdown 、 Markdown 扩展 (包括表格支持) 以及 GitHub 风格 Markdown 。</p>
+
+<p>有了标签式多文档界面、PDF 导出、内置的图片上传工具、会话管理、拼写检查、自动保存、语法高亮以及内置的 CSS 管理器，您可以随心所欲地使用 MarkdownPad。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Treesky</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-02-03T23:28:00+08:00" pubdate data-updated="true">Feb 3<span>rd</span>, 2014</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/l1/'>L1</a>, <a class='category' href='/blog/categories/lr/'>LR</a>, <a class='category' href='/blog/categories/survey/'>Survey</a>, <a class='category' href='/blog/categories/optimization/'>optimization</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://Treesky.github.com/blog/2014/02/03/l1lr-optimization/" data-via="" data-counturl="http://Treesky.github.com/blog/2014/02/03/l1lr-optimization/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/02/03/weiwei/" title="Previous Post: MarkDown Examples">&laquo; MarkDown Examples</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2014/02/05/liblinear-usage/" title="Next Post: liblinear_usage">liblinear_usage &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/08/29/test/">test</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/08/29/predict-bid/">predict_bid</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/10/factorization-machine/">Factorization machine</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/10/context-advertisment/">Context Advertisment</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/10/logistic-regression/">logistic regression</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - Treesky -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'treesky';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://Treesky.github.com/blog/2014/02/03/l1lr-optimization/';
+        var disqus_url = 'http://Treesky.github.com/blog/2014/02/03/l1lr-optimization/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

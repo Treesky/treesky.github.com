@@ -1,0 +1,377 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>l1r-lr optimization - Running</title>
+  <meta name="author" content="Treesky">
+
+  
+  <meta name="description" content="在大规模机器学习中，可能最常见的机器学习算法就是 l1-regularized logisic regreesion. 这种算法适用于大规模稀疏数据，上亿维度的feature，只有几十维的非0特征，几十亿的instance。loss-function如下： \min \limits_{\ &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://Treesky.github.com/blog/2014/02/09/l1r-lr-optimization/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Running" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<style TYPE="text/css">
+code.has-jax {font: inherit; font-size: 100%; background: inherit; border: inherit;}
+</style>
+<!-- mathjax config similar to math.stackexchange -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  jax: ["input/TeX", "output/HTML-CSS"],
+  tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$']],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  messageStyle: "none",
+  "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-47905022-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Running</a></h1>
+  
+    <h2>Fear cuts deeper than swords</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:Treesky.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">L1r-lr Optimization</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-02-09T18:33:00+08:00" pubdate data-updated="true">Feb 9<span>th</span>, 2014</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>在大规模机器学习中，可能最常见的机器学习算法就是 l1-regularized logisic regreesion. 这种算法适用于大规模稀疏数据，上亿维度的feature，只有几十维的非0特征，几十亿的instance。loss-function如下：</p>
+
+<script type="math/tex; mode=display">
+\min \limits_{\mathbf{w}} f(\mathbf{w}) = ||\mathbf{w}||_1 + C \sum _{i=1}^{l} log(1+e^{-y \mathbf{w}^T x})
+</script>
+
+<p>owlqn是解决l1r-lr的“标准方法”，实现起来简单粗暴有效 =.=</p>
+
+<p>介绍见：http://www.cnblogs.com/downtjs/archive/2013/07/29/3222643.html
+源码见：http://research.microsoft.com/en-us/um/people/jfgao/
+这个代码里面，同时计算 $f’(\mathbf{w})$ 和 $f(\mathbf{w})$ 的那部分思路还是挺有意思的。</p>
+
+<p>在<code>A comparision of Optimization Methods and Software for Large-Scale L1-regularized Linear Classification</code>里面介绍了另外一些优化方法，比如CDN.</p>
+
+<p>一、BBR算法
+BBR(Bayesian Binary Regression)是<code>Large-scale Bayesian logistic regression for text categorization</code>中提出的一种使用trust-region newton methold来解决 coordnate descent 的 subproblem 的方法。</p>
+
+<p>算法的基本思想如下：</p>
+
+<p>step 1: 给定 $\mathbf{w}^1$.</p>
+
+<p>step 2: while true (coordinate descent的外层循环)</p>
+
+<p>step 3: 对 active sets 中的coordinate j (coordinate descent的内层循环)</p>
+
+<p>step 4: 计算 
+$$
+U _j = C \sum \limits _{i=1}^l x _{ij}^2 F(y _i(\mathbf{w}^{k,j})^T \mathbf{x}_i, \Delta _j |x _{ij}| ) 
+$$</p>
+
+<script type="math/tex; mode=display">
+F(r, \delta) = 0.25 (|r| \leq \delta)
+</script>
+
+<script type="math/tex; mode=display">
+F(r, \delta) = \cfrac{1}{2+e^(|r| - \delta) + e^{\delta - |r|}} (otherwise)
+</script>
+
+<script type="math/tex; mode=display">
+\Delta _j \text{ is the trust-region}
+</script>
+
+<p>step 5: 计算
+$$
+d = \min ( \max( P( - \cfrac{g_j^{‘}(0)}{U_j}, w_j^{k,j}), - \Delta _j) , \Delta _j)
+$$</p>
+
+<script type="math/tex; mode=display">
+P(z,w) = z \text{ for } (sgn(w+z) = sgn(w))
+</script>
+
+<script type="math/tex; mode=display">
+P(z,w) = -w \text{ (otherwise)}
+</script>
+
+<p>step 6: 更新
+$$
+\Delta _j = \max (2|d|, \Delta _j / 2)
+$$</p>
+
+<p>step2 和 step3 是标准的 coordinate descent 的算法框架。在step4-step6中，解决了这样一个subproblem，就是</p>
+
+<script type="math/tex; mode=display">
+\min \limits_{z} g_j(z) = | \mathbf{w} _j + z | - | \mathbf{w} _j| + L(\mathbf{w} + z \mathbf{e} _j ) - L(\mathbf{w})
+</script>
+
+<p>这个 subproblem 的解就表示在选定了 coordinate j上我们应该 move 多长的距离。BBR 使用了 trust-region newton method 来解决这个问题。在使用trust-region过程中，我们需要一个函数来在trust-region内逼近原始函数，在BBR中使用了如下函数</p>
+
+<script type="math/tex; mode=display"> g_j(z) = g_j(0) + g_j^{'}(0) z + \cfrac{1}{2} g_j^{''}(\eta z) z^2 </script>
+
+<p>在解这个问题的过程中，有两个地方需要注意。</p>
+
+<p>第一、找到一个”合适”的 $ {U<em>{jz}} $ 使得 
+$$
+U</em>{jz} \geq g_j^{‘’}(z), \forall |z| \leq \Delta _j 
+$$ </p>
+
+<p>$$
+\hat g_j(z) = g_j(0) + g_j^{‘}(0)z + \cfrac{1}{2} {U_{jz}}^2
+$$
+在这种情况下，只要 step $z$ 能优化 $\hat g_j(z)$ 也就是 $\hat g_j(z) \leq \hat g_j(0)$ 就可以证明
+$$
+g_j(z) - g_j(0) = g_j(z) - \hat g_j(0) \leq \hat g_j(z) - \hat g_j(0) \le 0
+$$
+也就是能优化 $\hat g_j(z)$ 的step $z$ 也能优化 $g_j(z)$</p>
+
+<p>第二、在 $w_j^{k,j} = 0$ 的时候 $g_j(z)$ 在 $ z = 0$的情况下，是不连续的。因此 $g_j^{‘}(z)$ 是not well-defined的。在这种情况下，定义如下：如果 $L_j^{‘}(0) + 1 \le 0, g_j^{‘}(0) = L_j^{‘}(0)+ 1$ 如果 $L_j^{‘}(0) - 1 \ge 0, g_j^{‘}(0) = L_j^{‘}(0) - 1$。 这种定义和 OWL-QN 的sub-gradient的定义是如出一辙的，是从”目的”出发的一个定义，这样定义可以使得在 $0 \le z \leq -g_j^{‘}(0)/U_j$ 的情况下，使得 $ \hat g _j(0) \le \hat g _j(0)$ 也就是使我们得到一个更好的解。 这个bound的好坏严重影响算法的性能。</p>
+
+<p>二、 Coordinate Descent Method Using One-Dimensional Newton Directions (CDN).</p>
+
+<p>在CDN中，最后一项使用了 $U_j$ 来代替 Hession值。 如果使用Hession值，然后得到 newon direction 的话，在算法收敛到最后的 local convergence 阶段会得到一个更快的收敛速度。
+因此问题就变成了优化如下的目标函数
+$$
+\min \limits_z |w_j^{k,j} + z| - |w_j^{k,j}| + L_j^{‘}(0) z + \cfrac{1}{2} L_j^{‘’}(0)z^2
+$$</p>
+
+<p>上面的问题有close-formed solution就是
+$$
+d = -\cfrac{L^{‘}(0) + 1}{L^{‘’}(0)} \text{ if } L^{‘’}(0) + 1 \leq L_j^{‘’}(0) w_j^{k,j}
+$$
+$$
+d = -\cfrac{L^{‘}(0) - 1}{L^{‘’}(0)} \text{ if } L^{‘’}(0) - 1 \geq L_j^{‘’}(0) w_j^{k,j}
+$$
+$$
+-w_j^{k,j} \text{ otherwise. }
+$$</p>
+
+<p>这个算法的里面有两个要注意的地方就是</p>
+
+<p>1、 在计算 $L^{‘}(0)$ 的过程中，作者把 $L^{‘}(0)$ 的计算方法变了一下，和原始的计算方法是一致的，但是应该能快一些。这个技巧在后面计算的 line search 终止条件的时候，同样出现了。</p>
+
+<p>2、 在最后的 line search 过程中，作者处理了一种特殊情况，就是所有的特征值都是正数的时候，作者使用了一个计算较为简单，不需要遍历所有instance的近似终止条件来判断。这在在实现过程中对算法的运行时间，应该也有较大帮助。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Treesky</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-02-09T18:33:00+08:00" pubdate data-updated="true">Feb 9<span>th</span>, 2014</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://Treesky.github.com/blog/2014/02/09/l1r-lr-optimization/" data-via="" data-counturl="http://Treesky.github.com/blog/2014/02/09/l1r-lr-optimization/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/02/05/liblinear-usage/" title="Previous Post: liblinear_usage">&laquo; liblinear_usage</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2014/02/11/ensemble/" title="Next Post: Adaboost 漫谈">Adaboost 漫谈 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/08/29/test/">test</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/08/29/predict-bid/">predict_bid</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/10/factorization-machine/">Factorization machine</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/10/context-advertisment/">Context Advertisment</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/10/logistic-regression/">logistic regression</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - Treesky -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'treesky';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://Treesky.github.com/blog/2014/02/09/l1r-lr-optimization/';
+        var disqus_url = 'http://Treesky.github.com/blog/2014/02/09/l1r-lr-optimization/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

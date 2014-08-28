@@ -1,0 +1,359 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>owlqn - Running</title>
+  <meta name="author" content="Treesky">
+
+  
+  <meta name="description" content="在我们优化一个 loss function 的时候最自然的想法就是 gradient descent，毕竟 gradient 指向的是在当前点上的最速下降方向。 但是 gradient descent 的 local convergence 的速度非常慢，这部分是因为 gradient &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://Treesky.github.com/blog/2014/02/19/owlqn/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Running" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<style TYPE="text/css">
+code.has-jax {font: inherit; font-size: 100%; background: inherit; border: inherit;}
+</style>
+<!-- mathjax config similar to math.stackexchange -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  jax: ["input/TeX", "output/HTML-CSS"],
+  tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$']],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  messageStyle: "none",
+  "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-47905022-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Running</a></h1>
+  
+    <h2>Fear cuts deeper than swords</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:Treesky.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Owlqn</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-02-19T01:09:00+08:00" pubdate data-updated="true">Feb 19<span>th</span>, 2014</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>在我们优化一个 loss function 的时候最自然的想法就是 gradient descent，毕竟 gradient 指向的是在当前点上的最速下降方向。</p>
+
+<p>但是 gradient descent 的 local convergence 的速度非常慢，这部分是因为 gradient descent 是一种 “贪婪” 的做法，每次的时候我们都只考虑当前点的最速下降方向。</p>
+
+<p>除了 梯度 方向之外，还有很多方向可以用来作为搜索方向。这里面最有名的可能就是 Newton direction。</p>
+
+<p>Newton direction 考虑了如下问题</p>
+
+<script type="math/tex; mode=display">
+f(x_k + p) \approx f_k + p^T \nabla f_k + \cfrac{1}{2} p^T \nabla ^2 f_k p = m_k(p)
+</script>
+
+<p>当前的点是 $x_k$ 我们需要考虑的问题就是如果让 $x_k$ 在方向 $p$ 上移动单位长度，使得我们的函数值变的更小。
+我们对 $f(x_k + p) $ 做二阶泰勒展式展开，就可以得到等号右边的形式。然后对这个泰勒展示导数 = 0，可以得到</p>
+
+<script type="math/tex; mode=display">
+p = -\nabla ^2 f_k^{-1} \nabla f_k
+</script>
+
+<p>牛顿法在 local convergence 阶段有很好的收敛速度，但是 $ \nabla ^2 f_k $ 也就是我们所说的 hessian 矩阵，求解起来特别麻烦，于是我们就想通过一些近似的方法来求解 $ \nabla ^2 f_k $</p>
+
+<p>一个简单的思路就是，二阶导数是一阶导数的导数，也就是说</p>
+
+<script type="math/tex; mode=display">
+\nabla ^2 f_k^{-1} = B_{k+1} (x_{k+1} - x_k) = \nabla f_{k+1} - \nabla f_k 
+</script>
+
+<p>令 </p>
+
+<script type="math/tex; mode=display">
+s_k = x_ {k+1} - x_k \\
+y_k = \nabla f_{k+1} - \nabla f_k 
+</script>
+
+<p>我们就得到 $B_{k+1} s_k = y_k$ 这就是著名的切线公式。</p>
+
+<p>注意我们在得到 newton direction 的过程中，需要的一个条件就是hessian 矩阵正定；同是考虑到，求偏导次序不影响结果，因此hessian 矩阵还有正对称的性质。</p>
+
+<p>满足 $B_{k+1} s_k = y_k$ 的矩阵有无数，这个方程有 $n^2$ 的自由度，考虑到对称的性质，这个方程还有 $n(n-1)/2$ 的自由度；正定的性质可以额外引入 $n$ 个约束，即所有的 principal minors 应该是正的。但是这依然不足以唯一确定满足切线方程的矩阵。因此我们<strong>强行</strong> 引入了一个需求，就是 $B$ 和 $B_k$ 尽量“相似”</p>
+
+<script type="math/tex; mode=display">
+\min \limits _B \| B - B_k \| \\
+\text{subject to   } B = B^T, B s_k = y_k
+</script>
+
+<p>根据 “相似性” 也就是 norm 的定义不同，我们可以得到不同的 伪牛顿法，这里的相似性定义是<code>Frobenius norm</code>:</p>
+
+<script type="math/tex; mode=display">
+\| A \| _w = \| W^{1/2}AW{1/2} ||_F
+</script>
+
+<script type="math/tex; mode=display">
+ \| C \| ^2_F = \sum _{i=1}^n \sum _{j=1}^n c_{ij}^2
+</script>
+
+<p>$W$ 的选择只要满足 $W y_k = S_k$ 即可。</p>
+
+<p>这里我们取 $W = G_k^{-1}$</p>
+
+<script type="math/tex; mode=display">
+G_k = [ \int_0^1 \nabla ^2 f(x_k + m \alpha _k p_k) dm]
+</script>
+
+<p>确定了 norm 的定义之后，我们求解 $B_k$ 就可以得到 DFP 伪牛顿法如下：</p>
+
+<script type="math/tex; mode=display">
+B_{k+1} = (I - r_k y_k s_k ^T) B_k (I - r_k s_k y_k ^T) + r_k y_k y_k^T, \\
+r_k = \cfrac{1}{y_k^T s_k}.
+</script>
+
+<p>考虑到我们最终用的时候，用的是 $B_k^{-1}$ 而不是 $B_k$ 本身，因此我们可以考虑直接近似 $B_k^{-1}$ 而不是近似 $B_k$ 然后再求逆矩阵。即我们直接求解 $H_{k+1} y_k = s_k$</p>
+
+<script type="math/tex; mode=display">
+\min \limits_H \| H - H_k \| \\
+\text{subject to } H = H^T, H y_k = s_k.
+</script>
+
+<p>一样的 norm 求解得到</p>
+
+<script type="math/tex; mode=display">
+H_{k+1} = (I - \rho _k s_k y_k^T)H_k(I- \rho _k y_k s_k^T) + \rho _k s_k s_k^T, \\
+\rho _k = \cfrac{1}{y_k^T s_k}
+</script>
+
+<p>这就是著名的BFGS算法。可能BFGS算法是所有的伪牛顿法中，普遍来说效果比较好的。</p>
+
+<p>BFGS算法虽然很好，但是要存储 $H_{k+1}$ 这个矩阵的大小是 $n(n+1)/2$ ，这个空间在 $n$ 很大的时候，是难以接受的。</p>
+
+<p>通过分析 BFGS 的更新公式，我们可以看到每次更新都只依赖于 $H_k, s_k, y_k$，如果我们把之前的 $H_0, 以及每一步的s_k, y_k$ 都保存下来的话，每次使用的时候，我们就可以现算出一个 $r = H_k \nabla f_k$ 的向量出来。</p>
+
+<p>通过精心的算法设计，就得到了LBFGS two-loop recursion 算法
+<code>http://www.cnblogs.com/downtjs/archive/2013/07/29/3222643.html</code></p>
+
+<p>再接下来就是通过使用 sub gradient 代替 gradient，解决了 l1-norm 不可导的问题之后，就得到了 OWL-QN 算法。 </p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Treesky</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-02-19T01:09:00+08:00" pubdate data-updated="true">Feb 19<span>th</span>, 2014</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://Treesky.github.com/blog/2014/02/19/owlqn/" data-via="" data-counturl="http://Treesky.github.com/blog/2014/02/19/owlqn/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/02/11/model-selection/" title="Previous Post: model_selection">&laquo; model_selection</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2014/02/19/dist-auc/" title="Next Post: margin_auc">margin_auc &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/08/29/test/">test</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/08/29/predict-bid/">predict_bid</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/10/factorization-machine/">Factorization machine</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/10/context-advertisment/">Context Advertisment</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/10/logistic-regression/">logistic regression</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - Treesky -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'treesky';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://Treesky.github.com/blog/2014/02/19/owlqn/';
+        var disqus_url = 'http://Treesky.github.com/blog/2014/02/19/owlqn/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>
