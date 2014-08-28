@@ -4,7 +4,7 @@
   <title><![CDATA[Running]]></title>
   <link href="http://Treesky.github.com/atom.xml" rel="self"/>
   <link href="http://Treesky.github.com/"/>
-  <updated>2014-08-29T01:52:28+08:00</updated>
+  <updated>2014-08-29T02:27:44+08:00</updated>
   <id>http://Treesky.github.com/</id>
   <author>
     <name><![CDATA[Treesky]]></name>
@@ -12,15 +12,6 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
-  
-  <entry>
-    <title type="html"><![CDATA[test]]></title>
-    <link href="http://Treesky.github.com/blog/2014/08/29/test/"/>
-    <updated>2014-08-29T01:52:00+08:00</updated>
-    <id>http://Treesky.github.com/blog/2014/08/29/test</id>
-    <content type="html"><![CDATA[
-]]></content>
-  </entry>
   
   <entry>
     <title type="html"><![CDATA[predict_bid]]></title>
