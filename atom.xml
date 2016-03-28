@@ -4,7 +4,7 @@
   <title><![CDATA[Running]]></title>
   <link href="http://Treesky.github.com/atom.xml" rel="self"/>
   <link href="http://Treesky.github.com/"/>
-  <updated>2015-08-22T22:56:06+08:00</updated>
+  <updated>2016-03-28T10:51:22+08:00</updated>
   <id>http://Treesky.github.com/</id>
   <author>
     <name><![CDATA[Treesky]]></name>
@@ -12,6 +12,31 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[unsupervised learning]]></title>
+    <link href="http://Treesky.github.com/blog/2016/03/28/unsupervised-learning/"/>
+    <updated>2016-03-28T10:51:00+08:00</updated>
+    <id>http://Treesky.github.com/blog/2016/03/28/unsupervised-learning</id>
+    <content type="html"><![CDATA[
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Comparison of Training Methods for Deep Neural Networks]]></title>
+    <link href="http://Treesky.github.com/blog/2015/09/04/comparison-of-training-methods-for-deep-neural-networks/"/>
+    <updated>2015-09-04T17:24:00+08:00</updated>
+    <id>http://Treesky.github.com/blog/2015/09/04/comparison-of-training-methods-for-deep-neural-networks</id>
+    <content type="html"><![CDATA[<p>Sigmoid 激活函数比较适合做分类问题。</p>
+
+<p>CNN 和 RNN.</p>
+
+<p>Stochastic neural networks 可以部分程度上解决神经网络比较容易陷入局部最优解的问题。 RBM 是一种随机神经网络。</p>
+
+<p>神经网络的初始权重，如果初始化权重比较小的话，容易造成梯度弥散，vanishing gradient problem. 如果值比较大的话，容易陷入局部最优解。 [The Difficulty of Training Deep Architechtures and the Effect of Unsupervised Pre-Training.] [Why Does Unsupervised Pre-traing Help Deep Learning?]</p>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[A Secant Version of the L-M Method]]></title>
@@ -80,7 +105,7 @@ st. f(x+h) = f(x) + Bh
 <script type="math/tex; mode=display">
 B=B_{old}+uh^T
 
-h=x-x_{old}, u = \cfrac{1}{h^Th}(f(x)-f(x_old)-Bh)
+,h=x-x_{old}, u = \cfrac{1}{h^Th}(f(x)-f(x_{old})-Bh)
 </script>
 
 <p>在我们可以得到新的B之后，我们就可以套用传统的 L-M 方法，或者其他的 quasi-Newton 法来解目标问题了。a</p>

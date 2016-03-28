@@ -9,10 +9,7 @@
   <meta name="author" content="Treesky">
 
   
-  <meta name="description" content="对大规模稀疏数据要加 -l 0
--s6 l1-regularized logistic regression
--g g -n n : to generate the experiment result of CDN with shrinking technique
-">
+  <meta name="description" content="from Ensemble Methods: Foundations and Algorithms 提到 ensemble 类的算法，第一个要提到的就是 boosting, boosting 类算法的最初诞生，来自于 Kearns and Valiant [1989]提出的一个理论上的问题，就是 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -96,6 +93,306 @@ MathJax.Hub.Config({
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/02/11/ensemble/">Adaboost 漫谈</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-02-11T23:24:00+08:00" pubdate data-updated="true">Feb 11<span>th</span>, 2014</time>
+        
+         | <a href="/blog/2014/02/11/ensemble/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>from <code>Ensemble Methods: Foundations and Algorithms</code></p>
+
+<p>提到 ensemble 类的算法，第一个要提到的就是 boosting, boosting 类算法的最初诞生，来自于 Kearns and Valiant [1989]提出的一个理论上的问题，就是 <em>weakly learnalbe 和 strongly learnable 这两类问题是否等价</em>，由于在现实应用中，一个 weakly 的分类器总是很容易得到的，但是一个 strongly 的分类器却很难得到，因此如果上面那个问题的答案是 “是” 的话，那么任何一个弱分类器都有潜力成为一个强分类器。因此上述理论问题的答案，对真实应用有着相当程度的指导意义。Schapire [1990] 通过构造的方法，回答上上面的问题，构造出来的算法框架就是 boosting. </p>
+
+<p>在 boosting 类算法中，最有名的就属 adaboost 了。 Friedman [2000] 的出发点就是最小化 <strong>exponential loss</strong></p>
+
+<script type="math/tex; mode=display">
+l_{exp}(h \| D) = E_{x ～ D} [e^{-f(x)h(x)}]
+</script>
+
+<p>我们首先解释为什么使用 <strong>exponential loss</strong></p>
+
+<script type="math/tex; mode=display">
+\cfrac{\partial e^{-f(x)H(x)}}{\partial H(x)} = -f(x) e^{-f(x)}H(x)
+</script>
+
+<p>$H(x)$ 是我们要求的模型，$f(x)$ 代表真实的分布函数，$f(x)$ 的取值在分类的情况下，只有两种 ${-1,+1}$，因此</p>
+
+<script type="math/tex; mode=display">
+-f(x) e^{-f(x)H(x)} = -e^{-H(x)}P(f(x)=1 \| x) + e^{H(x)} P(f(x)=-1 \| x)
+</script>
+
+<p>在优化的过程中，我们强制如上的 $ \text{log loss } = 0$ 的时候，可以得到如下的解</p>
+
+<script type="math/tex; mode=display">
+H(x) = \cfrac{1}{2} ln \cfrac{P(f(x) = 1 \| x)}{P(f(x) = -1 \| x)}
+</script>
+
+<p>因此</p>
+
+<script type="math/tex; mode=display">
+sign(H(x)) = sign(\cfrac{1}{2} ln \cfrac{P(f(x) = 1 \| x)}{P(f(x) = -1 \| x)})
+</script>
+
+<p>也就是当 $P(f(x)=1 | x) &gt; P(f(x)=-1 | x)$ 的时候 $sign(H(x)) = 1$，而 $P(f(x)=1 | x) &lt; P(f(x)=-1 | x)$ 的时候 $sign(H(x)) = -1$，而这个结果就是贝叶斯分类器的结果，也就是理论上的最优结果。</p>
+
+<p>因此我们就得出结论，<strong>优化 log loss 和 优化bayesian 分类错误率是一致的</strong>，而这也是 Adaboost 的所有的出发点。</p>
+
+<p>Adaboost 在整个算法过程中主要分为两步，第一步 <strong>求得$h_t(x)$的权重$\alpha_t$</strong> ，第二步在 <strong>$H_t$ 的基础上求得一个新的 <script type="math/tex">h_{t+1}</script></strong> ，使得新的 $h_{t+1}$ 可以弥补 $$H_t$ 的一些不足</p>
+
+<p>在第一步的情况下，我们已经得到了$h_t$，要求得$\alpha _t$使得$\alpha _t * h_t$ 可以最小化 log loss.</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+
+\begin{aligned}
+l_{exp}(\alpha _t h_t \| D_t) &= E_{x \sim D_t}[e^{-f(x) \alpha _t h_t(x)}] \\
+&= e^{-\alpha_t} P_{x \sim D_t}(f(x)= h_t(x)) + e^{\alpha _t} P_{x \sim D_t}(f(x) \ne h_t(x)) \\
+&= e^{-\alpha_t}(1-\epsilon _t) + e^{\alpha _t} \epsilon _t
+\end{aligned}
+ %]]></script>
+
+<p>上式对 $\alpha _t$ 求导之后强制为0，则</p>
+
+<script type="math/tex; mode=display">
+\cfrac{\partial l_{exp}(\alpha _t h_t \| D_t)}{\partial \alpha _t} = -e^{-\alpha _t}(1-\epsilon _t) + e^{\alpha _t} \epsilon _t = 0 \\
+\alpha_t = \cfrac{1}{2} ln(\cfrac{1-\epsilon _t}{\epsilon _t})
+</script>
+
+<p>得到的 $\alpha _t$ 就是 Adaboost 中对基分类器的权重公式。
+从这个公式中，我们要可以朴素的看到，这是一个从错误率中计算得到的，正确率越高，则权重越大；准确率越低，则权重越小。从这个角度上来说，也是 make sense 的。</p>
+
+<p>接下来，我们从 $H _{t-1}$ 来计算 $h _t$ ( $H _{t-1}$ 就是前 $t-1$ 轮的基分类器合并成的分类器)，和计算 $\alpha _t$ 一样，我们来最小化 exp loss：</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+
+\begin{aligned}
+l_{exp}(H_{t-1} + h_t \| D) &= E_{x \sim D}[e^{-f(x)(H_{t-1}(x)+h_t(x))}] \\
+&= E_{x \sim D}[e^{-f(x)H_{t-1}(x)} e^{-f(x)h_t(x)}] \\
+&= E_{x \sim D}[e^{-f(x)H_{t-1}(x)}(1-f(x)h_t(x)+\cfrac{f(x)^2 h_t(x)^2}{2})]\text{   对 } e^{-f(x)h_t(x)} \text{ 泰勒展开} \\
+&= E_{x \sim D}[e^{-f(x)H_{t-1}(x)}(1-f(x)h_t(x) + \cfrac{1}{2})] \text{   注意} f(x)^2 = 1 \text{   } h_t(x)^2 = 1
+\end{aligned}
+ %]]></script>
+
+<p>因此最“理想”的 $h_t(x)$ 就是</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+
+\begin{aligned}
+h_t(x) &= arg \min \limits _h l_{exp} (H _{t-1} + h \| D) \\
+&= arg \min _h E_{x \sim D}[e^{-f(x)H_{t-1}(x)}(1-f(x)h(x) + \cfrac{1}{2})] \\
+&= arg \max _h E_{x \sim D}[e^{-f(x)H_{t-1}(x)}f(x)h(x)] \\
+&= arg \max _h E_{x \sim D}[\cfrac{e^{-f(x)H_{t-1}(x)}}{E_{x \sim D}[e^{-f(x)H_{t-1}(x)}]} f(x)h(x)]
+\end{aligned}
+ %]]></script>
+
+<p>我们让 </p>
+
+<script type="math/tex; mode=display">
+D _t(x) = \cfrac{D(x)e^{-f(x)H_{t-1}(x)}}{E_{x \sim D}[e^{-f(x)H_{t-1}(x)}]}
+</script>
+
+<p>的话</p>
+
+<script type="math/tex; mode=display">
+h_t(x) = arg \max \limits _h E_{x \sim D_t} [f(x)h(x)]
+</script>
+
+<p>从 $D$ 到 $D_t$ 的这一步显得非常的巧妙。纵观整个求解 $h_t$ 的过程，我们可以看到首先在 loss 的建立部分，我们是给 $h_t$ 解决 $H_{t-1}$ 不能解决的instance上以额外的权重，使得 $h_t$ 可以改善整个 $H_t$，这是make sense的，也就是说新的分类器更关注于以往的 ensemble 分类器所解决不了的问题。
+接下来，用一个 class-imbalance 里面非常常用的技巧，就是instance的loss加权，我们可以通过对 instance 的分布做改变，down-sampling or up-sampling 来达到完全相同的效果。但是经过这样一个简单的变换之后，整个算法的过程就显得简洁而优美。这一步真是非常巧妙。</p>
+
+<p>接下来还有一些收尾工作，就是我们从原始分布 $D$ 得到 $h_t$ 需要的分布 $D_t$，这总还不够优美，我们希望得到一个递推公式，从 $D_{t-1}$ 得到 $D_t$，具体如下</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+
+\begin{aligned}
+D_{t+1}(x) &= \cfrac{D(x) e^{-f(x)H_t(x)}}{E_{x \sim D}[e ^{-f(x)H_t(x)}]} \\
+&= \cfrac{D(x)e^{-f(x)H_{t-1}(x)e^{-f(x) \alpha_t h_t(x)}}}{E_{x \sim D}[e^{-f(x)H_t(x)}]} \\
+&= D_t(x) \cdot e^{-f(x) \alpha _t h_t(x)} \cfrac{E_{x \sim D[e^{-f(x) H_{t-1}(x)}]}}{E_{x \sim D}[e^{-f(x)H_t(x)}]}
+\end{aligned}
+ %]]></script>
+
+<p>而上述公式也正是 Adaboost 调整 instance 分布的公式。</p>
+
+<p>从整体上，我们可以看到我们首先证明了 exp loss 和 bayesian 最优错误率的一致性；然后从 exp loss 出发得到了 $ \alpha _t$ 和 $ D _t(h _t) $ 的更新公式。因此我们可以看到 Adaboost 有很强的在训练数据上得到 Bayesian 最优错误率的能力，但是这个达到这个最优错误率是否就意味着不会过拟合，这个我认为还有另外一个必要条件，就是 <strong>训练数据和测试数据的分布一致</strong>， Adaboost 对这个 <strong>一致性</strong> 非常敏感，只要分布稍有差别，就非常容易过拟合，因此当训练数据和测试数据的分布不一致的情况下， 我们就需要一些额外的措施来帮助我们避免过拟合。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/02/09/l1r-lr-optimization/">L1r-lr Optimization</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-02-09T18:33:00+08:00" pubdate data-updated="true">Feb 9<span>th</span>, 2014</time>
+        
+         | <a href="/blog/2014/02/09/l1r-lr-optimization/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>在大规模机器学习中，可能最常见的机器学习算法就是 l1-regularized logisic regreesion. 这种算法适用于大规模稀疏数据，上亿维度的feature，只有几十维的非0特征，几十亿的instance。loss-function如下：</p>
+
+<script type="math/tex; mode=display">
+\min \limits_{\mathbf{w}} f(\mathbf{w}) = ||\mathbf{w}||_1 + C \sum _{i=1}^{l} log(1+e^{-y \mathbf{w}^T x})
+</script>
+
+<p>owlqn是解决l1r-lr的“标准方法”，实现起来简单粗暴有效 =.=</p>
+
+<p>介绍见：http://www.cnblogs.com/downtjs/archive/2013/07/29/3222643.html
+源码见：http://research.microsoft.com/en-us/um/people/jfgao/
+这个代码里面，同时计算 $f’(\mathbf{w})$ 和 $f(\mathbf{w})$ 的那部分思路还是挺有意思的。</p>
+
+<p>在<code>A comparision of Optimization Methods and Software for Large-Scale L1-regularized Linear Classification</code>里面介绍了另外一些优化方法，比如CDN.</p>
+
+<p>一、BBR算法
+BBR(Bayesian Binary Regression)是<code>Large-scale Bayesian logistic regression for text categorization</code>中提出的一种使用trust-region newton methold来解决 coordnate descent 的 subproblem 的方法。</p>
+
+<p>算法的基本思想如下：</p>
+
+<p>step 1: 给定 $\mathbf{w}^1$.</p>
+
+<p>step 2: while true (coordinate descent的外层循环)</p>
+
+<p>step 3: 对 active sets 中的coordinate j (coordinate descent的内层循环)</p>
+
+<p>step 4: 计算 
+$$
+U _j = C \sum \limits _{i=1}^l x _{ij}^2 F(y _i(\mathbf{w}^{k,j})^T \mathbf{x}_i, \Delta _j |x _{ij}| ) 
+$$</p>
+
+<script type="math/tex; mode=display">
+F(r, \delta) = 0.25 (|r| \leq \delta)
+</script>
+
+<script type="math/tex; mode=display">
+F(r, \delta) = \cfrac{1}{2+e^(|r| - \delta) + e^{\delta - |r|}} (otherwise)
+</script>
+
+<script type="math/tex; mode=display">
+\Delta _j \text{ is the trust-region}
+</script>
+
+<p>step 5: 计算
+$$
+d = \min ( \max( P( - \cfrac{g_j^{‘}(0)}{U_j}, w_j^{k,j}), - \Delta _j) , \Delta _j)
+$$</p>
+
+<script type="math/tex; mode=display">
+P(z,w) = z \text{ for } (sgn(w+z) = sgn(w))
+</script>
+
+<script type="math/tex; mode=display">
+P(z,w) = -w \text{ (otherwise)}
+</script>
+
+<p>step 6: 更新
+$$
+\Delta _j = \max (2|d|, \Delta _j / 2)
+$$</p>
+
+<p>step2 和 step3 是标准的 coordinate descent 的算法框架。在step4-step6中，解决了这样一个subproblem，就是</p>
+
+<script type="math/tex; mode=display">
+\min \limits_{z} g_j(z) = | \mathbf{w} _j + z | - | \mathbf{w} _j| + L(\mathbf{w} + z \mathbf{e} _j ) - L(\mathbf{w})
+</script>
+
+<p>这个 subproblem 的解就表示在选定了 coordinate j上我们应该 move 多长的距离。BBR 使用了 trust-region newton method 来解决这个问题。在使用trust-region过程中，我们需要一个函数来在trust-region内逼近原始函数，在BBR中使用了如下函数</p>
+
+<script type="math/tex; mode=display"> g_j(z) = g_j(0) + g_j^{'}(0) z + \cfrac{1}{2} g_j^{''}(\eta z) z^2 </script>
+
+<p>在解这个问题的过程中，有两个地方需要注意。</p>
+
+<p>第一、找到一个”合适”的 $ {U<em>{jz}} $ 使得 
+$$
+U</em>{jz} \geq g_j^{‘’}(z), \forall |z| \leq \Delta _j 
+$$ </p>
+
+<p>$$
+\hat g_j(z) = g_j(0) + g_j^{‘}(0)z + \cfrac{1}{2} {U_{jz}}^2
+$$
+在这种情况下，只要 step $z$ 能优化 $\hat g_j(z)$ 也就是 $\hat g_j(z) \leq \hat g_j(0)$ 就可以证明
+$$
+g_j(z) - g_j(0) = g_j(z) - \hat g_j(0) \leq \hat g_j(z) - \hat g_j(0) \le 0
+$$
+也就是能优化 $\hat g_j(z)$ 的step $z$ 也能优化 $g_j(z)$</p>
+
+<p>第二、在 $w_j^{k,j} = 0$ 的时候 $g_j(z)$ 在 $ z = 0$的情况下，是不连续的。因此 $g_j^{‘}(z)$ 是not well-defined的。在这种情况下，定义如下：如果 $L_j^{‘}(0) + 1 \le 0, g_j^{‘}(0) = L_j^{‘}(0)+ 1$ 如果 $L_j^{‘}(0) - 1 \ge 0, g_j^{‘}(0) = L_j^{‘}(0) - 1$。 这种定义和 OWL-QN 的sub-gradient的定义是如出一辙的，是从”目的”出发的一个定义，这样定义可以使得在 $0 \le z \leq -g_j^{‘}(0)/U_j$ 的情况下，使得 $ \hat g _j(0) \le \hat g _j(0)$ 也就是使我们得到一个更好的解。 这个bound的好坏严重影响算法的性能。</p>
+
+<p>二、 Coordinate Descent Method Using One-Dimensional Newton Directions (CDN).</p>
+
+<p>在CDN中，最后一项使用了 $U_j$ 来代替 Hession值。 如果使用Hession值，然后得到 newon direction 的话，在算法收敛到最后的 local convergence 阶段会得到一个更快的收敛速度。
+因此问题就变成了优化如下的目标函数
+$$
+\min \limits_z |w_j^{k,j} + z| - |w_j^{k,j}| + L_j^{‘}(0) z + \cfrac{1}{2} L_j^{‘’}(0)z^2
+$$</p>
+
+<p>上面的问题有close-formed solution就是
+$$
+d = -\cfrac{L^{‘}(0) + 1}{L^{‘’}(0)} \text{ if } L^{‘’}(0) + 1 \leq L_j^{‘’}(0) w_j^{k,j}
+$$
+$$
+d = -\cfrac{L^{‘}(0) - 1}{L^{‘’}(0)} \text{ if } L^{‘’}(0) - 1 \geq L_j^{‘’}(0) w_j^{k,j}
+$$
+$$
+-w_j^{k,j} \text{ otherwise. }
+$$</p>
+
+<p>这个算法的里面有两个要注意的地方就是</p>
+
+<p>1、 在计算 $L^{‘}(0)$ 的过程中，作者把 $L^{‘}(0)$ 的计算方法变了一下，和原始的计算方法是一致的，但是应该能快一些。这个技巧在后面计算的 line search 终止条件的时候，同样出现了。</p>
+
+<p>2、 在最后的 line search 过程中，作者处理了一种特殊情况，就是所有的特征值都是正数的时候，作者使用了一个计算较为简单，不需要遍历所有instance的近似终止条件来判断。这在在实现过程中对算法的运行时间，应该也有较大帮助。</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -370,6 +667,14 @@ Solution Path</p>
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/03/28/unsupervised-learning/">unsupervised learning</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/09/04/comparison-of-training-methods-for-deep-neural-networks/">Comparison of Training Methods for Deep Neural Networks</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2015/08/22/a-secant-version-of-the-l-m-method/">A Secant Version of the L-M Method</a>
       </li>
     
@@ -379,14 +684,6 @@ Solution Path</p>
     
       <li class="post">
         <a href="/blog/2014/04/10/factorization-machine/">Factorization machine</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2014/04/10/context-advertisment/">Context Advertisment</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2014/04/10/logistic-regression/">logistic regression</a>
       </li>
     
   </ul>
@@ -403,7 +700,7 @@ Solution Path</p>
     </div>
   </div>
   <footer role="contentinfo"><p>
-  Copyright &copy; 2015 - Treesky -
+  Copyright &copy; 2016 - Treesky -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 
