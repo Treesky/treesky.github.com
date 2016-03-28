@@ -68,7 +68,7 @@ $$
 $$
 B=B_{old}+uh^T
 
-h=x-x_{old}, u = \cfrac{1}{h^Th}(f(x)-f(x_old)-Bh)
+,h=x-x_{old}, u = \cfrac{1}{h^Th}(f(x)-f(x_{old})-Bh)
 $$
 
 在我们可以得到新的B之后，我们就可以套用传统的 L-M 方法，或者其他的 quasi-Newton 法来解目标问题了。a
